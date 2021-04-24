@@ -1,9 +1,6 @@
 from typing import Dict, Optional, List, Any
 
-from transformers.modeling_roberta import RobertaModel
-from transformers.modeling_xlnet import XLNetModel
-from transformers.modeling_bert import BertModel
-from transformers.modeling_albert import AlbertModel
+from transformers import RobertaModel, XLNetModel, BertModel, AlbertModel
 from transformers.modeling_utils import SequenceSummary
 import re
 import torch
@@ -87,6 +84,7 @@ class TransformerMCQAModel(Model):
         self._debug -= 1
         input_ids = question['tokens']
 
+        input_ids = input_ids['token_ids']
         batch_size = input_ids.size(0)
         num_choices = input_ids.size(1)
 
@@ -94,25 +92,31 @@ class TransformerMCQAModel(Model):
 
         # Segment ids are not used by RoBERTa
         if 'roberta' in self._pretrained_model:
-            transformer_outputs, pooled_output = self._transformer_model(input_ids=util.combine_initial_dims(input_ids),
+            output = self._transformer_model(input_ids=util.combine_initial_dims(input_ids),
                                                       # token_type_ids=util.combine_initial_dims(segment_ids),
                                                       attention_mask=util.combine_initial_dims(question_mask))
+            last_layer = output.last_hidden_state
+            pooled_output = output.pooler_output
             cls_output = self._dropout(pooled_output)
         if 'albert' in self._pretrained_model:
+            assert False
             transformer_outputs, pooled_output = self._transformer_model(input_ids=util.combine_initial_dims(input_ids),
                                                       # token_type_ids=util.combine_initial_dims(segment_ids),
                                                       attention_mask=util.combine_initial_dims(question_mask))
             cls_output = self._dropout(pooled_output)
         elif 'xlnet' in self._pretrained_model:
+            assert False
             transformer_outputs = self._transformer_model(input_ids=util.combine_initial_dims(input_ids),
                                                          token_type_ids=util.combine_initial_dims(segment_ids),
                                                           attention_mask=util.combine_initial_dims(question_mask))
             cls_output = self.sequence_summary(transformer_outputs[0])
 
         elif 'bert' in self._pretrained_model:
-            last_layer, pooled_output = self._transformer_model(input_ids=util.combine_initial_dims(input_ids),
+            output = self._transformer_model(input_ids=util.combine_initial_dims(input_ids),
                                                           token_type_ids=util.combine_initial_dims(segment_ids),
                                                           attention_mask=util.combine_initial_dims(question_mask))
+            last_layer = output.last_hidden_state
+            pooled_output = output.pooler_output
             cls_output = self._dropout(pooled_output)
         else:
             assert (ValueError)
@@ -125,6 +129,11 @@ class TransformerMCQAModel(Model):
 
         output_dict['label_probs'] = torch.nn.functional.softmax(label_logits, dim=1)
         output_dict['answer_index'] = label_logits.argmax(1)
+
+        with open("age.txt", "a") as f:
+            for i, example in enumerate(metadata):
+                words = example["question_text"].split(" ")
+                f.write(f'{words[1]} {words[10]} {example["correct_answer_index"] == output_dict["answer_index"][i]}\n')
 
         if label is not None:
             loss = self._loss(label_logits, label)

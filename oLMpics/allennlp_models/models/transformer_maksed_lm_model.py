@@ -1,9 +1,6 @@
 from typing import Dict, Optional, List, Any
 
-from transformers.modeling_roberta import RobertaForMaskedLM
-from transformers.modeling_xlnet import XLNetLMHeadModel
-from transformers.modeling_bert import BertForMaskedLM
-from transformers.modeling_albert import AlbertForMaskedLM
+from transformers import RobertaForMaskedLM, XLNetLMHeadModel, BertForMaskedLM, AlbertForMaskedLM
 import re, json, os
 import numpy as np
 import torch
@@ -152,6 +149,7 @@ class TransformerMaskedLMModel(Model):
 
         self._debug -= 1
         input_ids = phrase['tokens']
+        input_ids = input_ids['token_ids']
         masked_labels[(masked_labels == 0)] = -1
 
         batch_size = input_ids.size(0)
@@ -176,7 +174,7 @@ class TransformerMaskedLMModel(Model):
             assert (ValueError)
 
         output_dict = {}
-        label_logits = torch.zeros(batch_size,num_choices)
+        label_logits = torch.zeros(batch_size,num_choices).cuda()
         for e,example in enumerate(metadata):
             for c,choice in enumerate(example['all_masked_index_ids']):
                 for t in choice:
@@ -194,6 +192,13 @@ class TransformerMaskedLMModel(Model):
                                         'answer_ind': example['correct_answer_index'],
                                         'prediction': example['choice_text_list'][pred_ind],
                                         'is_correct': (example['correct_answer_index'] == pred_ind) * 1.0}) + '\n')
+
+        preds = label_logits.argmax(1)
+        print("-", end="")
+        with open("age.txt", "a") as f:
+            for i, example in enumerate(metadata):
+                words = example["question_text"].split(" ")
+                f.write(f'{words[1]} {words[10]} {example["correct_answer_index"] == preds[i]}\n')
 
         self._accuracy(label_logits, label)
         output_dict["loss"] = loss

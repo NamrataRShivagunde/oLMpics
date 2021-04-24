@@ -34,7 +34,8 @@ class TransformerMCQAReader(DatasetReader):
         super().__init__()
 
         self._tokenizer = PretrainedTransformerTokenizer(pretrained_model)
-        self._tokenizer_internal = self._tokenizer._tokenizer
+        # self._tokenizer_internal = self._tokenizer._tokenizer
+        self._tokenizer_internal = self._tokenizer.tokenizer
         token_indexer = PretrainedTransformerIndexer(pretrained_model)
         self._token_indexers = {'tokens': token_indexer}
 
@@ -169,7 +170,8 @@ class TransformerMCQAReader(DatasetReader):
         elif self._model_type in ['albert']:
             question = question.replace('[MASK]', '[MASK]>')
 
-        tokens = self._tokenizer.tokenize_sentence_pair(question, answer)
+        # tokens = self._tokenizer.tokenize_sentence_pair(question, answer)
+        tokens = self._tokenizer.tokenize(question + '</s>' + answer)
 
         # TODO make sure the segments IDs do not contribute
         segment_ids = [0] * len(tokens)

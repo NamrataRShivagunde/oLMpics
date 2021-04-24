@@ -1,43 +1,50 @@
 local train_size = 200;
 local batch_size = 8;
 local gradient_accumulation_batch_size = 2;
-local num_epochs = 4;
-local learning_rate = 1e-5;
+local num_epochs = 1;
+local learning_rate = 0;
 local weight_decay = 0.1;
 local warmup_ratio = 0.06;
-local transformer_model = "roberta-base";
+local transformer_model = "roberta-base"; //"bert-base-uncased";
 local cuda_device = 0;
 
 {
   "dataset_reader": {
     "type": "transformer_mc_qa",
-    "sample": 200,
-    "num_choices": 3,
+    "sample": -1,
+    "num_choices": 2,
     //"add_prefix": {"q": "Q: ", "a": "A: "},
     "pretrained_model": transformer_model,
     "max_pieces": 256
   },
   "validation_dataset_reader": {
     "type": "transformer_mc_qa",
-    "sample": -1,
-    "num_choices": 3,
+    "sample": 200,
+    "num_choices": 2,
     //"add_prefix": {"q": "Q: ", "a": "A: "},
     "pretrained_model": transformer_model,
     "max_pieces": 256
   },
   //"datasets_for_vocab_creation": [],
-  "train_data_path": "s3://olmpics/challenge/commonsense_knowledge_train.jsonl.gz",
-  "validation_data_path": "s3://olmpics/challenge/commonsense_knowledge_dev.jsonl.gz",
+  //"train_data_path": "s3://olmpics/challenge/multi_choice_language_modeling/multi_choice_language_modeling_train.jsonl.gz",
+  //"validation_data_path": "s3://olmpics/challenge/multi_choice_language_modeling/multi_choice_language_modeling_dev.jsonl.gz",
+  "validation_data_path": "https://olmpics.s3.us-east-2.amazonaws.com/challenge/number_comparison/number_comparison_age_compare_masked_train.jsonl.gz",
+  "train_data_path": "https://olmpics.s3.us-east-2.amazonaws.com/challenge/number_comparison/number_comparison_age_compare_masked_dev.jsonl.gz",
 
   "model": {
     "type": "transformer_mc_qa",
     "pretrained_model": transformer_model
   },
-  "iterator": {
-    "type": "basic",
-    "batch_size": batch_size
+  "data_loader": {
+    "batch_size": batch_size,
+    "shuffle": true
   },
   "trainer": {
+    "callbacks": [
+      {
+        type: "log_metrics_to_wandb",
+      }
+    ],
     "optimizer": {
       "type": "adamw",
       "weight_decay": weight_decay,
@@ -52,8 +59,8 @@ local cuda_device = 0;
       "num_steps_per_epoch": std.ceil(train_size / batch_size /  gradient_accumulation_batch_size),
     },
     "validation_metric": "+EM",
-    "num_serialized_models_to_keep": 1,
-    "should_log_learning_rate": true,
+    // "num_serialized_models_to_keep": 1,
+    // "should_log_learning_rate": true,
     "num_gradient_accumulation_steps": gradient_accumulation_batch_size,
     // "grad_clipping": 1.0,
     "num_epochs": num_epochs,
