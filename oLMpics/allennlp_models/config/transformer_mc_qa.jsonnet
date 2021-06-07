@@ -5,33 +5,35 @@ local num_epochs = 1;
 local learning_rate = 0;
 local weight_decay = 0.1;
 local warmup_ratio = 0.06;
-local transformer_model = "roberta-base"; //"bert-base-uncased";
+local transformer_model = "roberta-large";
+//local transformer_model = "bert-large-uncased-whole-word-masking";
+//local transformer_model = "bert-large-uncased";
+//local transformer_model = "bert-base-uncased";
 local cuda_device = 0;
 
 {
   "dataset_reader": {
     "type": "transformer_mc_qa",
-    "sample": -1,
-    "num_choices": 2,
+    "sample": 1,
+    "num_choices": 3,
     //"add_prefix": {"q": "Q: ", "a": "A: "},
     "pretrained_model": transformer_model,
     "max_pieces": 256
   },
   "validation_dataset_reader": {
     "type": "transformer_mc_qa",
-    "sample": 200,
-    "num_choices": 2,
+    "sample": -1,
+    "num_choices": 3,
     //"add_prefix": {"q": "Q: ", "a": "A: "},
     "pretrained_model": transformer_model,
     "max_pieces": 256
   },
   //"datasets_for_vocab_creation": [],
-  //"train_data_path": "s3://olmpics/challenge/multi_choice_language_modeling/multi_choice_language_modeling_train.jsonl.gz",
-  //"validation_data_path": "s3://olmpics/challenge/multi_choice_language_modeling/multi_choice_language_modeling_dev.jsonl.gz",
-  "validation_data_path": "https://olmpics.s3.us-east-2.amazonaws.com/challenge/number_comparison/number_comparison_age_compare_masked_train.jsonl.gz",
-  "train_data_path": "https://olmpics.s3.us-east-2.amazonaws.com/challenge/number_comparison/number_comparison_age_compare_masked_dev.jsonl.gz",
+  "train_data_path": "https://olmpics.s3.us-east-2.amazonaws.com/challenge/conjunction/conjunction_filt4_train.jsonl.gz",
+  "validation_data_path": "https://olmpics.s3.us-east-2.amazonaws.com/challenge/conjunction/conjunction_filt4_dev.jsonl.gz",
 
   "model": {
+    "requires_grad":false,
     "type": "transformer_mc_qa",
     "pretrained_model": transformer_model
   },
@@ -64,6 +66,7 @@ local cuda_device = 0;
     "num_gradient_accumulation_steps": gradient_accumulation_batch_size,
     // "grad_clipping": 1.0,
     "num_epochs": num_epochs,
-    "cuda_device": cuda_device
+    "cuda_device": cuda_device,
+    "run_sanity_checks": false
   }
 }

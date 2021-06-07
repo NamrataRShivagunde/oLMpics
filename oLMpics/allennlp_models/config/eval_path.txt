@@ -1,0 +1,1 @@
+https://olmpics.s3.us-east-2.amazonaws.com/challenge/hypernym_conjunction/hypernym_conjunction_dev.jsonl.gz

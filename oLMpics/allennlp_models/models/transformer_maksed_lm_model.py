@@ -51,9 +51,11 @@ class RobertaForMultiChoiceMaskedLM(RobertaForMaskedLM):
             loss_fct = CrossEntropyLoss(ignore_index=-1)
             # choosing prediction with all_masked_index_ids
             masked_lm_loss = 0
+            # all_masked_index_ids on first iteration is [[[(8, 2530)], [(8, 3240)]]], which is [[[mask_index, younger_id], [mask_index, older_id]]]
             for i, choices in enumerate(all_masked_index_ids):
                 masked_lm_loss += \
                     loss_fct(prediction_scores[i, choices[0][0][0], [c[0][1] for c in choices]].unsqueeze(0), label[i].unsqueeze(0))
+            #                                      mask_index,        word_id (id of younger/older)
 
             # masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), masked_lm_labels.view(-1))
             outputs = (masked_lm_loss,) + outputs
@@ -194,11 +196,11 @@ class TransformerMaskedLMModel(Model):
                                         'is_correct': (example['correct_answer_index'] == pred_ind) * 1.0}) + '\n')
 
         preds = label_logits.argmax(1)
-        print("-", end="")
-        with open("age.txt", "a") as f:
-            for i, example in enumerate(metadata):
-                words = example["question_text"].split(" ")
-                f.write(f'{words[1]} {words[10]} {example["correct_answer_index"] == preds[i]}\n')
+        # print("-", end="")
+        # with open("age.txt", "a") as f:
+        #     for i, example in enumerate(metadata):
+        #         words = example["question_text"].split(" ")
+        #         f.write(f'{words[1]} {words[10]} {example["correct_answer_index"] == preds[i]}\n')
 
         self._accuracy(label_logits, label)
         output_dict["loss"] = loss

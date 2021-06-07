@@ -5,14 +5,14 @@ local num_epochs = 1;
 local learning_rate = 0.0;
 local weight_decay = 0.1;
 local warmup_ratio = 0.06;
-local transformer_model = "roberta-large"; //"bert-large-uncased-whole-word-masking";
+local transformer_model = std.stripChars(importstr "model_name.txt","\n");
 local cuda_device = 0;
 
 {
   "dataset_reader": {
     "type": "transformer_masked_lm_qa",
     "sample": 1,
-    "num_choices": 2,
+    "num_choices": std.parseInt(std.stripChars(importstr "num_choices.txt","\n")),
     //"add_prefix": {"q": "Q: ", "a": "A: "},
     "pretrained_model": transformer_model,
     "max_pieces": 256
@@ -20,14 +20,14 @@ local cuda_device = 0;
   "validation_dataset_reader": {
     "type": "transformer_masked_lm_qa",
     "sample": -1,
-    "num_choices": 2,
+    "num_choices": std.parseInt(std.stripChars(importstr "num_choices.txt","\n")),
     //"add_prefix": {"q": "Q: ", "a": "A: "},
     "pretrained_model": transformer_model,
     "max_pieces": 256
   },
   //"datasets_for_vocab_creation": [],
-  "train_data_path": "https://olmpics.s3.us-east-2.amazonaws.com/challenge/number_comparison/number_comparison_age_compare_masked_train.jsonl.gz",
-  "validation_data_path": "https://olmpics.s3.us-east-2.amazonaws.com/challenge/number_comparison/number_comparison_age_compare_masked_dev.jsonl.gz",
+  "train_data_path": std.stripChars(importstr "train_path.txt","\n"),
+  "validation_data_path": std.stripChars(importstr "eval_path.txt","\n"),
 
   "model": {
     "requires_grad":false,

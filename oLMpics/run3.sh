@@ -1,1 +1,1 @@
-wandb_allennlp --subcommand=train --config_file=allennlp_models/config/transformer_masked_lm.jsonnet --include-package=allennlp_models --wandb_run_name=my_first_run
+wandb_allennlp --subcommand=train --config_file=allennlp_models/config/transformer_mc_qa.jsonnet --include-package=allennlp_models

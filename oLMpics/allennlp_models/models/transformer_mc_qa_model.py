@@ -130,10 +130,10 @@ class TransformerMCQAModel(Model):
         output_dict['label_probs'] = torch.nn.functional.softmax(label_logits, dim=1)
         output_dict['answer_index'] = label_logits.argmax(1)
 
-        with open("age.txt", "a") as f:
-            for i, example in enumerate(metadata):
-                words = example["question_text"].split(" ")
-                f.write(f'{words[1]} {words[10]} {example["correct_answer_index"] == output_dict["answer_index"][i]}\n')
+        # with open("age.txt", "a") as f:
+        #     for i, example in enumerate(metadata):
+        #         words = example["question_text"].split(" ")
+        #         f.write(f'{words[1]} {words[10]} {example["correct_answer_index"] == output_dict["answer_index"][i]}\n')
 
         if label is not None:
             loss = self._loss(label_logits, label)
