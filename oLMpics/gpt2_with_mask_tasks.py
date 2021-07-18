@@ -350,7 +350,7 @@ transformers.set_seed(args.seed)
 
 args.num_choices = 2
 args.model_name_or_path = 'gpt2'
-data = "data/number_comparison_age_compare_masked_dev.jsonl"
+data = "data/negation_antonym_synonym_negation_dev.jsonl"
 
 model = transformers.AutoModelWithLMHead.from_pretrained(args.model_name_or_path)#.cuda()
 tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_name_or_path , mask_token = '[MASK]')
