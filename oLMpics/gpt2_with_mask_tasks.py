@@ -397,7 +397,7 @@ print("lenght of all_preds = ",len(all_preds))
 
 all_pred = []
 for i in all_preds:
-    all_pred.append(i.item())
+    all_pred.append(i))
 
 print("first 10 enteries of all_answers = ", all_answers[:10])
 print("first 10 enteries of all_pred = ", all_pred[:10])
