@@ -349,7 +349,7 @@ args = get_args()
 transformers.set_seed(args.seed)
 
 args.num_choices = 5
-args.model_name_or_path = 'gpt2'
+args.model_name_or_path = 'gpt2-medium'
 data = "data/quantifiers_coffee_cats_quantifiers_dev.jsonl"
 
 model = transformers.AutoModelWithLMHead.from_pretrained(args.model_name_or_path).cuda()
