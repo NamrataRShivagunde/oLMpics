@@ -348,9 +348,9 @@ def evaluate_withmask(args, model, tokenizer, eval_dataset):
 args = get_args()
 transformers.set_seed(args.seed)
 
-args.num_choices = 3
+args.num_choices = 2
 args.model_name_or_path = 'gpt2-xl'
-data = "data/compositional_comparison_dev.jsonl"
+data = "data/size_comparison_dev.jsonl"
 
 model = transformers.AutoModelWithLMHead.from_pretrained(args.model_name_or_path).cuda()
 tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_name_or_path , mask_token = '[MASK]')
