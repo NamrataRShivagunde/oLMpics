@@ -349,7 +349,7 @@ args = get_args()
 transformers.set_seed(args.seed)
 
 args.num_choices = 2
-args.model_name_or_path = 'gpt2-medium'
+args.model_name_or_path = 'gpt2'
 data = "data/size_comparison_dev.jsonl"
 
 model = transformers.AutoModelWithLMHead.from_pretrained(args.model_name_or_path).cuda()
