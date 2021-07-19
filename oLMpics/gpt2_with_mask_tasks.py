@@ -201,7 +201,7 @@ def get_sentence_prob(input_ids, logits):
     probs = torch.prod(probs, dim=1)
     return probs
 
-def evaluate_withmask(args, model, tokenizer, eval_dataset):
+def evaluate_taskwithmask(args, model, tokenizer, eval_dataset,data_path):
     """ 
     Evaluates model on the dataset, is currently hardcoded to only work for the Age Comparison task 
     `huggingface_generic_task.ipynb` works for all tasks but does not support GPT2
@@ -227,6 +227,10 @@ def evaluate_withmask(args, model, tokenizer, eval_dataset):
     
     all_answers = []
     all_preds = []
+    first_age = []
+    second_age = []
+    first_object = []
+    second_object = []
     
     #create list of true answers =  all_answers 
     for batch in eval_dataloader:
@@ -249,6 +253,16 @@ def evaluate_withmask(args, model, tokenizer, eval_dataset):
         answer_ids = batch.pop("answer_id")
         label_encoding_list = list(label_encodings.values())
         no_of_labels = len(label_encoding_list)
+
+          #create the list for age1, age2 for age task and list of objects for object comparison task
+        if data_path == "data/number_comparison_age_compare_masked_dev.jsonl":
+            age1 = tokenizer.decode(batch["input_ids"][:, 1]).split(" ")
+            age2 = tokenizer.decode(batch["input_ids"][:, 11]).split(" ")
+            age1 = age1[1:]
+            age2 = age2[1:]
+            first_age.extend(age1)
+            second_age.extend(age2)
+
         with torch.no_grad():
             #generate probablities for all the labels
             
@@ -342,7 +356,12 @@ def evaluate_withmask(args, model, tokenizer, eval_dataset):
           combine_prob = torch.cat((id0_prob, id1_prob, id2_prob, id3_prob, id4_prob), dim=1)
           preds = list(torch.argmax(combine_prob, dim=1))
           all_preds.extend(preds)
-        
+
+    if data_path == "data/number_comparison_age_compare_masked_dev.jsonl":
+        first_age = [int(age) for age in first_age]
+        second_age = [int(age) for age in second_age]
+        return all_answers, all_preds, first_age, second_age
+    
     return all_answers, all_preds
 
 args = get_args()
@@ -366,7 +385,10 @@ eval_dataset = AgeDataset(eval_questions, eval_choices, eval_answer_ids, tokeniz
 
 tokenizer.mask_token_id
 
-all_answers, all_preds = evaluate_withmask(args, model, tokenizer, eval_dataset)
+if data == "data/number_comparison_age_compare_masked_dev.jsonl":
+  all_answers, all_preds, first_item, second_item = evaluate_taskwithmask(args, model, tokenizer, eval_dataset, data)
+else:
+  all_answers, all_preds = evaluate_taskwithmask(args, model, tokenizer, eval_dataset, data)
 
 #results
 print("lenght of all_answers = ",len(all_answers))
@@ -375,10 +397,10 @@ print("lenght of all_preds = ",len(all_preds))
 
 all_pred = []
 for i in all_preds:
-    all_pred.append(i)
+    all_pred.append(i.item())
 
 print("first 10 enteries of all_answers = ", all_answers[:10])
-print("first 10 enteries of all_preds = ", all_preds[:10])
+print("first 10 enteries of all_pred = ", all_pred[:10])
 
 total = 0
 for i in range(len(all_answers)):
@@ -388,5 +410,12 @@ for i in range(len(all_answers)):
 accuracy = total/len(all_answers) 
 print("The accuracy is of {} for {} task is ".format(args.model_name_or_path, data), accuracy)
 
-
+if data == "data/number_comparison_age_compare_masked_dev.jsonl":
+  plt.scatter(first_item, second_item, c=all_preds, marker="s")
+  plt.title(f"Age Comparison\n{args.model_name_or_path}")
+  plt.axis("square")
+  plt.xlabel("Age 1")
+  plt.ylabel("Age 2")
+  plt.savefig(f"imgs/{args.model_name_or_path.rsplit('/', 1)[-1]}-ages-double.jpg", bbox_inches="tight")
+  plt.show()
 
