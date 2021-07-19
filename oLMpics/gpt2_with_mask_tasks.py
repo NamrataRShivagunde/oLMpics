@@ -409,7 +409,7 @@ accuracy = total/len(all_answers)
 print("The accuracy is of {} for {} task is ".format(args.model_name_or_path, data), accuracy)
 
 if data == "data/number_comparison_age_compare_masked_dev.jsonl":
-  plt.scatter(first_item, second_item, c=all_preds, marker="s")
+  plt.scatter(first_item, second_item, c=all_pred, marker="s")
   plt.title(f"Age Comparison\n{args.model_name_or_path}")
   plt.axis("square")
   plt.xlabel("Age 1")
