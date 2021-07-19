@@ -367,9 +367,9 @@ def evaluate_taskwithmask(args, model, tokenizer, eval_dataset,data_path):
 args = get_args()
 transformers.set_seed(args.seed)
 
-args.num_choices = 5
-args.model_name_or_path = 'gpt2-xl'
-data = "data/quantifiers_coffee_cats_quantifiers_dev.jsonl"
+args.num_choices = 2
+args.model_name_or_path = 'gpt2'
+data = "data/number_comparison_age_compare_masked_dev.jsonl"
 
 model = transformers.AutoModelWithLMHead.from_pretrained(args.model_name_or_path).cuda()
 tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_name_or_path , mask_token = '[MASK]')
