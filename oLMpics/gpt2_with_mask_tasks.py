@@ -247,7 +247,7 @@ def evaluate_taskwithmask(args, model, tokenizer, eval_dataset,data_path):
             if key != "answer_id":
                 batch[key] = torch.stack(batch[key], dim=-1)
 
-            batch[key] = batch[key].cuda()
+            batch[key] = batch[key]#.cuda()
       
         
         answer_ids = batch.pop("answer_id")
@@ -371,7 +371,7 @@ args.num_choices = 2
 args.model_name_or_path = 'gpt2'
 data = "data/number_comparison_age_compare_masked_dev.jsonl"
 
-model = transformers.AutoModelWithLMHead.from_pretrained(args.model_name_or_path).cuda()
+model = transformers.AutoModelWithLMHead.from_pretrained(args.model_name_or_path)#.cuda()
 tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_name_or_path , mask_token = '[MASK]')
 tokenizer.pad_token = tokenizer.eos_token
 #train_questions, train_choices, train_answer_ids = get_data(, args.sample_train, args.num_choices)
