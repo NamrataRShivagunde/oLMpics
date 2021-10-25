@@ -368,8 +368,8 @@ data  = "size_comparison_dev.jsonl" , args.num_choices = 2
 data  = "compositional_comparison_dev.jsonl" , args.num_choices = 3
 data  = "coffee_cats_quantifiers_dev.jsonl" , args.num_choices = 5
 '''
-dataset_dict = {"number_comparison_age_compare_masked_dev.jsonl":2, "negation_antonym_synonym_negation_dev.jsonl":2, "size_comparison_dev.jsonl":2, "compositional_comparison_dev.jsonl":3, "quantifiers_coffee_cats_quantifiers_dev.jsonl":5}
-dataset_dict_seq = {"number_comparison_age_compare_masked_dev.jsonl":2}
+dataset_dict = {"data/number_comparison_age_compare_masked_dev.jsonl":2, "data/negation_antonym_synonym_negation_dev.jsonl":2, "data/size_comparison_dev.jsonl":2, "data/compositional_comparison_dev.jsonl":3, "data/quantifiers_coffee_cats_quantifiers_dev.jsonl":5}
+dataset_dict_seq = {"data/number_comparison_age_compare_masked_dev.jsonl":2}
 model_name_or_path = args2.modelname
 results_seq_flag = args2.results_seq_flag
 
