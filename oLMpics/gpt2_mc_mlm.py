@@ -457,7 +457,7 @@ def zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq,  model_name, res
 results = zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq, model_name_or_path, results, results_seq, results_seq_flag=True)
 
 if results_seq_flag:
-    results.to_excel('{}-seq-results.xlsx'.format(model_name_or_path))
+    results.to_excel('gpt2-results/{}-seq-results.xlsx'.format(model_name_or_path))
 else:
-    results.to_excel('{}-results.xlsx'.format(model_name_or_path))
+    results.to_excel('gpt2-results/{}-results.xlsx'.format(model_name_or_path))
 
