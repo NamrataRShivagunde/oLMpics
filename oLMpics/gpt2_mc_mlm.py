@@ -373,6 +373,8 @@ dataset_dict_seq = {"data/number_comparison_age_compare_masked_dev.jsonl":2}
 model_name_or_path = args2.modelname
 seq_flag = args2.results_seq_flag
 
+print(seq_flag)
+
 model = transformers.AutoModelWithLMHead.from_pretrained(model_name_or_path).cuda()
 tokenizer = transformers.AutoTokenizer.from_pretrained(model_name_or_path , mask_token = '[MASK]')
 tokenizer.pad_token = tokenizer.eos_token
@@ -451,7 +453,7 @@ def zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq,  model_name, res
 
               result_new = {'model_name': model_name, 'task_name':task_name, 'accuracy_5_runs':str(np.array(accuracy)), 'accuracy_mean': np.array(accuracy).mean()*100, 'CI':-1* np.array(accuracy).mean()*100+maxi*100, 'accuracy_min':mini, 'accuracy_max':maxi  }
               results_seq = results_seq.append(result_new, ignore_index=True)
-    if results_seq_flag:
+    if seq_flag:
         return results_seq
     return results
 
