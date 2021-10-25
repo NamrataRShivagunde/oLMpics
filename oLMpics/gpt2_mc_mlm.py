@@ -383,8 +383,8 @@ results = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "a
 results_seq = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "accuracy_mean", "CI", "accuracy_min", "accuracy_max"])
 
 
-def zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq,  model_name, results, results_seq, results_seq_flag=seq_flag):
-    if results_seq_flag == False:
+def zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq,  model_name, results, results_seq, seq_flag):
+    if seq_flag == False:
         print("Dividing the dataset RANDOMLY.")
         for task_name, num_choices in dataset_dict.items():
             accuracy = []
@@ -455,7 +455,7 @@ def zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq,  model_name, res
         return results_seq
     return results
 
-results = zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq, model_name_or_path, results, results_seq, results_seq_flag=seq_flag)
+results = zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq, model_name_or_path, results, results_seq, seq_flag)
 
 if seg_flag:
     results.to_excel('gpt2-results/{}-seq-results.xlsx'.format(model_name_or_path))
