@@ -238,21 +238,10 @@ def evaluate_mc_mlm(args, model, tokenizer, eval_dataset, data_path):
                 batch[key] = torch.stack(batch[key], dim=-1)
 
             batch[key] = batch[key].cuda()
-      
-        
+         
         answer_ids = batch.pop("answer_id")
         label_encoding_list = list(label_encodings.values())
         no_of_labels = len(label_encoding_list)
-
-        #create the list for age1, age2 for age task and list of objects for object comparison task
-        if data_path == "data/number_comparison_age_compare_masked_dev.jsonl":
-            age1 = tokenizer.decode(batch["input_ids"][:, 1]).split(" ")
-            age2 = tokenizer.decode(batch["input_ids"][:, 11]).split(" ")
-            age1 = age1[1:]
-            age2 = age2[1:]
-            first_age.extend(age1)
-            second_age.extend(age2)
-
 
         with torch.no_grad():
             #generate probablities for all the labels
@@ -355,7 +344,6 @@ def evaluate_mc_mlm(args, model, tokenizer, eval_dataset, data_path):
           all_preds.extend(preds)
     return all_answers, all_preds
 
-
 args = get_args()
 args2 = parser.parse_args()
 transformers.set_seed(args.seed)
@@ -375,7 +363,6 @@ AgeDataset = RoBERTaDataset if any(prefix in model_name_or_path.lower() for pref
 
 results = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "accuracy_mean", "CI", "accuracy_min", "accuracy_max"])
 results_seq = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "accuracy_mean", "CI", "accuracy_min", "accuracy_max"])
-
 
 def zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq,  model_name, results, results_seq, seq_flag):
     if seq_flag == 'False':
