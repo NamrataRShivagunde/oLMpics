@@ -459,7 +459,10 @@ def zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq,  model_name, res
 results = zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq, model_name_or_path, results, results_seq, seq_flag)
 
 if seq_flag == 'False':
-    results.to_excel('gpt2-results/{}-results.xlsx'.format(model_name_or_path))
+    if model_name_or_path == 'EleutherAI/gpt-neo-1.3B':
+        results.to_excel('gpt2-results/gpt-neo-results.xlsx')
+    if  model_name_or_path == 'EleutherAI/gpt-j-6B':
+        results.to_excel('gpt2-results/gpt-j-results.xlsx')
 else:
     results.to_excel('gpt2-results/{}-seq-results.xlsx'.format(model_name_or_path))
 
