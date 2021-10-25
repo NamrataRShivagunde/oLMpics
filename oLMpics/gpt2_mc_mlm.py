@@ -373,7 +373,7 @@ dataset_dict_seq = {"data/number_comparison_age_compare_masked_dev.jsonl":2}
 model_name_or_path = args2.modelname
 seq_flag = args2.results_seq_flag
 
-print(seq_flag)
+print(type(seq_flag))
 
 model = transformers.AutoModelWithLMHead.from_pretrained(model_name_or_path).cuda()
 tokenizer = transformers.AutoTokenizer.from_pretrained(model_name_or_path , mask_token = '[MASK]')
@@ -386,7 +386,7 @@ results_seq = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs"
 
 
 def zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq,  model_name, results, results_seq, seq_flag):
-    if seq_flag == False:
+    if seq_flag == 'False':
         print("Dividing the dataset RANDOMLY.")
         for task_name, num_choices in dataset_dict.items():
             accuracy = []
@@ -459,7 +459,7 @@ def zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq,  model_name, res
 
 results = zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq, model_name_or_path, results, results_seq, seq_flag)
 
-if seg_flag:
+if seq_flag:
     results.to_excel('gpt2-results/{}-seq-results.xlsx'.format(model_name_or_path))
 else:
     results.to_excel('gpt2-results/{}-results.xlsx'.format(model_name_or_path))
