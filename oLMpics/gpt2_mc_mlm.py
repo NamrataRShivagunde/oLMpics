@@ -456,5 +456,8 @@ def zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq,  model_name, res
 
 results = zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq, model_name_or_path, results, results_seq, results_seq_flag=True)
 
-results.to_excel('{}-results.xlsx'.format(model_name_or_path))
+if results_seq_flag:
+    results.to_excel('{}-seq-results.xlsx'.format(model_name_or_path))
+else:
+    results.to_excel('{}-results.xlsx'.format(model_name_or_path))
 
