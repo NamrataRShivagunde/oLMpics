@@ -466,5 +466,10 @@ if seq_flag == 'False':
     else:
         results.to_excel('gpt2-results/{}-results.xlsx'.format(model_name_or_path))
 else:
-    results.to_excel('gpt2-results/{}-seq-results.xlsx'.format(model_name_or_path))
+    if model_name_or_path == 'EleutherAI/gpt-neo-1.3B':
+        results.to_excel('gpt2-results/gpt-neo-seq-results.xlsx')
+    elif  model_name_or_path == 'EleutherAI/gpt-j-6B':
+        results.to_excel('gpt2-results/gpt-j-seq-results.xlsx')
+    else:
+        results.to_excel('gpt2-results/{}-seq-results.xlsx'.format(model_name_or_path))
 
