@@ -415,7 +415,7 @@ def zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq,  model_name, res
 
             result_new = {'model_name': model_name, 'task_name':task_name, 'accuracy_5_runs':str(np.array(accuracy)), 'accuracy_mean': np.array(accuracy).mean()*100, 'CI':-1* np.array(accuracy).mean()*100+maxi*100, 'accuracy_min':mini, 'accuracy_max':maxi  }
             results = results.append(result_new, ignore_index=True)
-            return results
+        return results
     else:
         print("Dividing the dataset into five parts sequentially.")
         for task_name, num_choices in dataset_dict_seq.items():
@@ -454,12 +454,12 @@ def zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq,  model_name, res
 
               result_new = {'model_name': model_name, 'task_name':task_name, 'accuracy_5_runs':str(np.array(accuracy)), 'accuracy_mean': np.array(accuracy).mean()*100, 'CI':-1* np.array(accuracy).mean()*100+maxi*100, 'accuracy_min':mini, 'accuracy_max':maxi  }
               results_seq = results_seq.append(result_new, ignore_index=True)
-              return results_seq
+            return results_seq
 
 results = zero_shot_evaluation_mc_mlm(dataset_dict, dataset_dict_seq, model_name_or_path, results, results_seq, seq_flag)
 
 if seq_flag == 'False':
-    results.to_excel('gpt2-results/{}-seq-results.xlsx'.format(model_name_or_path))
-else:
     results.to_excel('gpt2-results/{}-results.xlsx'.format(model_name_or_path))
+else:
+    results.to_excel('gpt2-results/{}-seq-results.xlsx'.format(model_name_or_path))
 
