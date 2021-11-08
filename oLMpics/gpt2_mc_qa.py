@@ -200,7 +200,7 @@ def evaluate_qa_task(config, device, model, tokenizer, eval_dataset, data_path):
       
         print(data_path)
         with torch.no_grad():
-          if data_path == "hypernym_conjunction_dev.jsonl":
+          if data_path == "data-qa/hypernym_conjunction_dev.jsonl":
             #replace [MASK] with the index of first pad token as it will be the last token 
             print(check3)
             for i in range(len(batch["input_ids"])):
