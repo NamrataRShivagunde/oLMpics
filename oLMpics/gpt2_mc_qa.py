@@ -151,7 +151,7 @@ class BERTDataset(Dataset):  # Only difference is that BERTDataset has token_typ
 class RoBERTaDataset(Dataset):
     
     def __init__(self, questions, choices, answer_ids, tokenizer):
-        out = tokenizer(questions, max_length=50, padding="max_length")
+        out = tokenizer(questions, max_length=60, padding="max_length")
         self.input_ids = out["input_ids"]
         self.attention_mask = out["attention_mask"]
         self.questions = questions
@@ -268,17 +268,17 @@ def main():
         transformers.set_seed(config.seed)
 
         #dataset_dict = {"data-qa/hypernym_conjunction_dev.jsonl":3, "data-qa/composition_v2_dev.jsonl":3, "data-qa/conjunction_filt4_dev.jsonl":3}
-        dataset_dict = {"data-qa/composition_v2_dev.jsonl":3}
+        dataset_dict = {"data-qa/composition_v2_dev.jsonl":3, "data-qa/conjunction_filt4_dev.jsonl":3, "data-qa/hypernym_conjunction_dev.jsonl":3}
         results = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "accuracy_mean", "CI", "accuracy_min", "accuracy_max"])
 
         results = zero_shot_evaluation(config, dataset_dict, args.modelname, results)
 
         if args.modelname == 'EleutherAI/gpt-neo-1.3B':
-            results.to_excel('gpt2-results/gpt-neo-results.xlsx')
+            results.to_excel('gpt2-results/gpt-neo-results-qa.xlsx')
         elif  args.modelname == 'EleutherAI/gpt-j-6B':
-            results.to_excel('gpt2-results/gpt-j-results.xlsx')
+            results.to_excel('gpt2-results/gpt-j-results-qa.xlsx')
         else:
-            results.to_excel('gpt2-results/{}-results.xlsx'.format(args.modelname))
+            results.to_excel('gpt2-results/{}-results-qa.xlsx'.format(args.modelname))
         
 
 if __name__ == '__main__':
