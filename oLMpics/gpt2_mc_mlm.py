@@ -316,7 +316,7 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
               eval_answer_ids = list(sampled_dataset['ids'])
 
               eval_dataset = AgeDataset(eval_questions, eval_choices, eval_answer_ids, tokenizer)
-              all_answers, all_preds = evaluate_mc_mlm(config, model, tokenizer, eval_dataset, task_name)
+              all_answers, all_preds = evaluate_mc_mlm(config, model, tokenizer, eval_dataset)
               counter_a = 0
               counter_b = 0
               for i in range(len(all_answers)):
@@ -354,7 +354,7 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
                     eval_answer_ids = eval_answer_ids[:i*n] + eval_answer_ids[(i+1)*n:]   
 
                   eval_dataset = AgeDataset(eval_questions, eval_choices, eval_answer_ids, tokenizer)
-                  all_answers, all_preds = evaluate_mc_mlm(config, model, tokenizer, eval_dataset, task_name)
+                  all_answers, all_preds = evaluate_mc_mlm(config, model, tokenizer, eval_dataset)
                   counter_a = 0
                   counter_b = 0
                   for i in range(len(all_answers)):
