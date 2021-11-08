@@ -57,6 +57,8 @@ def get_configuration():
         sample_train=200,
         sample_eval=-1,
         num_choices=3,
+        #device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        device = 'cpu'
     )
     
     return args
@@ -151,7 +153,7 @@ class BERTDataset(Dataset):  # Only difference is that BERTDataset has token_typ
 class RoBERTaDataset(Dataset):
     
     def __init__(self, questions, choices, answer_ids, tokenizer):
-        out = tokenizer(questions, max_length=60, padding="max_length")
+        out = tokenizer(questions, max_length=45, padding="max_length")
         self.input_ids = out["input_ids"]
         self.attention_mask = out["attention_mask"]
         self.questions = questions
@@ -195,18 +197,20 @@ def evaluate_qa_task(config, model, tokenizer, eval_dataset, data_path):
 
         del batch["answer_id"] 
         for key in batch:
-            batch[key] = torch.stack(batch[key], dim=-1).cuda()
+            batch[key] = torch.stack(batch[key], dim=-1).to(config.device)
       
         
         with torch.no_grad():
           if data_path == "hypernym_conjunction_dev.jsonl":
             #replace [MASK] with the index of first pad token as it will be the last token 
+            print(check3)
             for i in range(len(batch["input_ids"])):
                   question = batch["input_ids"][i]
-                  print(question)
+                  print("printing question", question)
                   MASK_INDEX = (question==tokenizer.mask_token_id).nonzero().item()
                   batch["input_ids"][i, MASK_INDEX] = 220
-          
+                  print(question)
+
           print("check1")
           outputs = model(**batch)
           logits = outputs.logits
@@ -218,8 +222,8 @@ def evaluate_qa_task(config, model, tokenizer, eval_dataset, data_path):
                 first_pad_index = batch["input_ids"][i].tolist().index(tokenizer.eos_token_id)
                 x =[" " + choice_lists[j][i] for j in range(len(choice_lists))]
                 choice_ids = torch.tensor([tokenizer.encode(" " + choice_lists[j][i], add_special_tokens=False)[0] for j in range(len(choice_lists))])
-                choice_ids = choice_ids.cuda()
-                probs = logit[first_pad_index-1].index_select(0, choice_ids).cuda()
+                choice_ids = choice_ids.to(config.device)
+                probs = logit[first_pad_index-1].index_select(0, choice_ids).to(config.device)
                 max_ind = torch.argmax(probs)
                 all_preds.append(choice_lists[max_ind][i])
  
@@ -229,7 +233,7 @@ def zero_shot_evaluation(config, dataset_dict, model_name, results):
 
     AgeDataset = RoBERTaDataset if any(prefix in model_name.lower() for prefix in ("roberta", "bart", "distil", "gpt")) else BERTDataset
     
-    model = transformers.AutoModelWithLMHead.from_pretrained(model_name).cuda()
+    model = transformers.AutoModelWithLMHead.from_pretrained(model_name).to(config.device)
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_name , mask_token = '[MASK]')
     tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
     
