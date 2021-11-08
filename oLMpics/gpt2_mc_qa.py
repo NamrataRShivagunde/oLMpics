@@ -151,8 +151,6 @@ class BERTDataset(Dataset):  # Only difference is that BERTDataset has token_typ
 class RoBERTaDataset(Dataset):
     
     def __init__(self, questions, choices, answer_ids, tokenizer):
-        if any(prefix in args.model_name_or_path.lower() for prefix in ("roberta", "bart")):
-            questions = [question.replace('[MASK]','<mask>') for question in questions]
         out = tokenizer(questions, max_length=45, padding="max_length")
         self.input_ids = out["input_ids"]
         self.attention_mask = out["attention_mask"]
@@ -246,7 +244,7 @@ def zero_shot_evaluation(config, dataset_dict, model_name, results):
                 eval_answer_ids = list(sampled_dataset['ids'])
 
                 eval_dataset = AgeDataset(eval_questions, eval_choices, eval_answer_ids, tokenizer)
-                all_answers, all_preds = evaluate_qa_task(config, model, tokenizer, eval_dataset, task_name)
+                all_answers, all_preds = evaluate_qa_task(config, model_name, tokenizer, eval_dataset, task_name)
                 counter_a = 0
                 counter_b = 0
                 for i in range(len(all_answers)):
@@ -270,19 +268,12 @@ def main():
 
         dataset_dict = {"data/hypernym_conjunction_dev.jsonl":3, "data/composition_composition_v2_dev.jsonl":3, "data/conjunction_conjunction_filt4_dev.jsonl":3}
         results = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "accuracy_mean", "CI", "accuracy_min", "accuracy_max"])
-            
-        # config.num_choices = 3
-        # config.model_name_or_path = 'gpt2'
-        # data_path = "conjunction_filt4_dev.jsonl"
-        # data = data_path
 
-        
+        results = zero_shot_evaluation(config, dataset_dict, args.modelname, results)
 
-        results = zero_shot_evaluation(config, dataset_dict, args.model_name_or_path, results)
-
-        if args.model_name_or_path == 'EleutherAI/gpt-neo-1.3B':
+        if args.modelname == 'EleutherAI/gpt-neo-1.3B':
             results.to_excel('gpt2-results/gpt-neo-results.xlsx')
-        elif  args.model_name_or_path == 'EleutherAI/gpt-j-6B':
+        elif  args.modelname == 'EleutherAI/gpt-j-6B':
             results.to_excel('gpt2-results/gpt-j-results.xlsx')
         else:
             results.to_excel('gpt2-results/{}-results.xlsx'.format(args.model_name_or_path))
