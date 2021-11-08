@@ -205,12 +205,13 @@ def evaluate_qa_task(config, model, tokenizer, eval_dataset, data_path):
                   question = batch["input_ids"][i]
                   MASK_INDEX = (question==tokenizer.mask_token_id).nonzero().item()
                   batch["input_ids"][i, MASK_INDEX] = 220
-            
+          print("check1")
           outputs = model(**batch)
           logits = outputs.logits
           logits = torch.nn.functional.softmax(logits, dim=2)
+          
+          print("check2")
           choice_ids = []
-
           for i, logit in enumerate(logits):  
                 first_pad_index = batch["input_ids"][i].tolist().index(tokenizer.eos_token_id)
                 x =[" " + choice_lists[j][i] for j in range(len(choice_lists))]
@@ -223,7 +224,7 @@ def evaluate_qa_task(config, model, tokenizer, eval_dataset, data_path):
     return all_answers, all_preds
 
 def zero_shot_evaluation(config, dataset_dict, model_name, results):
-    #for loop for each task
+
     AgeDataset = RoBERTaDataset if any(prefix in model_name.lower() for prefix in ("roberta", "bart", "distil", "gpt")) else BERTDataset
     
     model = transformers.AutoModelWithLMHead.from_pretrained(model_name)#.cuda()
@@ -275,7 +276,7 @@ def main():
         elif  args.modelname == 'EleutherAI/gpt-j-6B':
             results.to_excel('gpt2-results/gpt-j-results.xlsx')
         else:
-            results.to_excel('gpt2-results/{}-results.xlsx'.format(args.model_name_or_path))
+            results.to_excel('gpt2-results/{}-results.xlsx'.format(args.modelname))
         
 
 if __name__ == '__main__':
