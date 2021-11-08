@@ -151,7 +151,7 @@ class BERTDataset(Dataset):  # Only difference is that BERTDataset has token_typ
 class RoBERTaDataset(Dataset):
     
     def __init__(self, questions, choices, answer_ids, tokenizer):
-        out = tokenizer(questions, max_length=45, padding="max_length")
+        out = tokenizer(questions, max_length=50, padding="max_length")
         self.input_ids = out["input_ids"]
         self.attention_mask = out["attention_mask"]
         self.questions = questions
