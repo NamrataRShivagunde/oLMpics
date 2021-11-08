@@ -266,7 +266,7 @@ def main():
         config = get_configuration()
         transformers.set_seed(config.seed)
 
-        dataset_dict = {"data/hypernym_conjunction_dev.jsonl":3, "data/composition_composition_v2_dev.jsonl":3, "data/conjunction_conjunction_filt4_dev.jsonl":3}
+        dataset_dict = {"data-qa/hypernym_conjunction_dev.jsonl":3, "data-qa/composition_v2_dev.jsonl":3, "data-qa/conjunction_filt4_dev.jsonl":3}
         results = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "accuracy_mean", "CI", "accuracy_min", "accuracy_max"])
 
         results = zero_shot_evaluation(config, dataset_dict, args.modelname, results)
