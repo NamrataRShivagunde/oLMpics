@@ -202,20 +202,17 @@ def evaluate_qa_task(config, device, model, tokenizer, eval_dataset, data_path):
         with torch.no_grad():
           if data_path == "data-qa/hypernym_conjunction_dev.jsonl":
             #replace [MASK] with the index of first pad token as it will be the last token 
-            print(check3)
             for i in range(len(batch["input_ids"])):
                   question = batch["input_ids"][i]
                   print("printing question", question)
                   MASK_INDEX = (question==tokenizer.mask_token_id).nonzero().item()
                   batch["input_ids"][i, MASK_INDEX] = 220
                   print(question)
-
-          print("check1")
+                  
           outputs = model(**batch)
           logits = outputs.logits
           logits = torch.nn.functional.softmax(logits, dim=2)
           
-          print("check2")
           choice_ids = []
           for i, logit in enumerate(logits):  
                 first_pad_index = batch["input_ids"][i].tolist().index(tokenizer.eos_token_id)
