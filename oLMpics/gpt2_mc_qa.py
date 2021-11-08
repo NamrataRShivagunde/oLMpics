@@ -190,7 +190,6 @@ def evaluate_qa_task(config, model, tokenizer, eval_dataset, data_path):
         
         for i in range(len(batch["choice_list"][0])):
             all_answers.append(batch["choice_list"][batch["answer_id"][i]][i])
-
      
         choice_lists = batch.pop("choice_list")
 
@@ -244,7 +243,7 @@ def zero_shot_evaluation(config, dataset_dict, model_name, results):
                 eval_answer_ids = list(sampled_dataset['ids'])
 
                 eval_dataset = AgeDataset(eval_questions, eval_choices, eval_answer_ids, tokenizer)
-                all_answers, all_preds = evaluate_qa_task(config, model_name, tokenizer, eval_dataset, task_name)
+                all_answers, all_preds = evaluate_qa_task(config, model, tokenizer, eval_dataset, task_name)
                 counter_a = 0
                 counter_b = 0
                 for i in range(len(all_answers)):
