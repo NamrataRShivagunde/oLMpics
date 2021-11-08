@@ -290,7 +290,7 @@ def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
             combine_prob = torch.cat(tuple(id_prob), dim=1)
             preds = list(torch.argmax(combine_prob, dim=1))
             all_preds.extend(preds)
-            
+
     return all_answers, all_preds
 
 def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_name, results, results_seq, seq_flag):
@@ -402,4 +402,4 @@ def main():
             results.to_excel('gpt2-results/{}-seq-results.xlsx'.format(model_name_or_path))
 
 if __name__ == '__main__':
-    system.exit(main())  # next section explains the use of sys.exit
+    main()
