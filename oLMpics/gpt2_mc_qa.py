@@ -26,6 +26,7 @@ logging.basicConfig(
 
 parser = argparse.ArgumentParser()
 parser.add_argument("modelname", help="gpt2 model name")
+parser.add_argument("device", help="use cpu otheruse use gpu")
 
 @dataclass
 class CustomArguments(transformers.TrainingArguments):
@@ -57,8 +58,6 @@ def get_configuration():
         sample_train=200,
         sample_eval=-1,
         num_choices=3,
-        #device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        device = 'cpu'
     )
     
     return args
@@ -171,7 +170,7 @@ class RoBERTaDataset(Dataset):
             "answer_id": self.answer_ids[i],
         }
 
-def evaluate_qa_task(config, model, tokenizer, eval_dataset, data_path):
+def evaluate_qa_task(config, device, model, tokenizer, eval_dataset, data_path):
    
     eval_sampler = SequentialSampler(eval_dataset)
     eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=config.per_device_eval_batch_size)
@@ -197,7 +196,7 @@ def evaluate_qa_task(config, model, tokenizer, eval_dataset, data_path):
 
         del batch["answer_id"] 
         for key in batch:
-            batch[key] = torch.stack(batch[key], dim=-1).to(config.device)
+            batch[key] = torch.stack(batch[key], dim=-1).to(device)
       
         
         with torch.no_grad():
@@ -222,18 +221,18 @@ def evaluate_qa_task(config, model, tokenizer, eval_dataset, data_path):
                 first_pad_index = batch["input_ids"][i].tolist().index(tokenizer.eos_token_id)
                 x =[" " + choice_lists[j][i] for j in range(len(choice_lists))]
                 choice_ids = torch.tensor([tokenizer.encode(" " + choice_lists[j][i], add_special_tokens=False)[0] for j in range(len(choice_lists))])
-                choice_ids = choice_ids.to(config.device)
-                probs = logit[first_pad_index-1].index_select(0, choice_ids).to(config.device)
+                choice_ids = choice_ids.to(device)
+                probs = logit[first_pad_index-1].index_select(0, choice_ids).to(device)
                 max_ind = torch.argmax(probs)
                 all_preds.append(choice_lists[max_ind][i])
  
     return all_answers, all_preds
 
-def zero_shot_evaluation(config, dataset_dict, model_name, results):
+def zero_shot_evaluation(config, device, dataset_dict, model_name, results):
 
     AgeDataset = RoBERTaDataset if any(prefix in model_name.lower() for prefix in ("roberta", "bart", "distil", "gpt")) else BERTDataset
     
-    model = transformers.AutoModelWithLMHead.from_pretrained(model_name).to(config.device)
+    model = transformers.AutoModelWithLMHead.from_pretrained(model_name).to(device)
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_name , mask_token = '[MASK]')
     tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
     
@@ -250,7 +249,7 @@ def zero_shot_evaluation(config, dataset_dict, model_name, results):
                 eval_answer_ids = list(sampled_dataset['ids'])
 
                 eval_dataset = AgeDataset(eval_questions, eval_choices, eval_answer_ids, tokenizer)
-                all_answers, all_preds = evaluate_qa_task(config, model, tokenizer, eval_dataset, task_name)
+                all_answers, all_preds = evaluate_qa_task(config, device, model, tokenizer, eval_dataset, task_name)
                 counter_a = 0
                 counter_b = 0
                 for i in range(len(all_answers)):
@@ -270,13 +269,14 @@ def zero_shot_evaluation(config, dataset_dict, model_name, results):
 def main():
         args = parser.parse_args()
         config = get_configuration()
+        device= args.device
         transformers.set_seed(config.seed)
 
         #dataset_dict = {"data-qa/hypernym_conjunction_dev.jsonl":3, "data-qa/composition_v2_dev.jsonl":3, "data-qa/conjunction_filt4_dev.jsonl":3}
         dataset_dict = {"data-qa/hypernym_conjunction_dev.jsonl":3}
         results = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "accuracy_mean", "CI", "accuracy_min", "accuracy_max"])
 
-        results = zero_shot_evaluation(config, dataset_dict, args.modelname, results)
+        results = zero_shot_evaluation(config, device, dataset_dict, args.modelname, results)
 
         if args.modelname == 'EleutherAI/gpt-neo-1.3B':
             results.to_excel('gpt2-results/gpt-neo-results-qa.xlsx')
