@@ -195,7 +195,7 @@ def evaluate_qa_task(config, model, tokenizer, eval_dataset, data_path):
 
         del batch["answer_id"] 
         for key in batch:
-            batch[key] = torch.stack(batch[key], dim=-1)#.cuda()
+            batch[key] = torch.stack(batch[key], dim=-1).cuda()
       
         
         with torch.no_grad():
@@ -216,8 +216,8 @@ def evaluate_qa_task(config, model, tokenizer, eval_dataset, data_path):
                 first_pad_index = batch["input_ids"][i].tolist().index(tokenizer.eos_token_id)
                 x =[" " + choice_lists[j][i] for j in range(len(choice_lists))]
                 choice_ids = torch.tensor([tokenizer.encode(" " + choice_lists[j][i], add_special_tokens=False)[0] for j in range(len(choice_lists))])
-                choice_ids = choice_ids#.cuda()
-                probs = logit[first_pad_index-1].index_select(0, choice_ids)#.cuda()
+                choice_ids = choice_ids.cuda()
+                probs = logit[first_pad_index-1].index_select(0, choice_ids).cuda()
                 max_ind = torch.argmax(probs)
                 all_preds.append(choice_lists[max_ind][i])
  
@@ -227,7 +227,7 @@ def zero_shot_evaluation(config, dataset_dict, model_name, results):
 
     AgeDataset = RoBERTaDataset if any(prefix in model_name.lower() for prefix in ("roberta", "bart", "distil", "gpt")) else BERTDataset
     
-    model = transformers.AutoModelWithLMHead.from_pretrained(model_name)#.cuda()
+    model = transformers.AutoModelWithLMHead.from_pretrained(model_name).cuda()
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_name , mask_token = '[MASK]')
     tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
     
