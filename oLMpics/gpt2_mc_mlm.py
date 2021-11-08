@@ -285,7 +285,9 @@ def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
                 outputs = model(**batch)
                 logits = outputs.logits
                 batch_size = len(batch["input_ids"])
-                id_prob[label_counter] = torch.reshape(get_sentence_prob(batch["input_ids"], logits, list_of_endtoken_index),  (batch_size, 1))
+                id_prob.append(
+                    torch.reshape(get_sentence_prob(batch["input_ids"], logits, list_of_endtoken_index),  
+                    (batch_size, 1)))
 
             combine_prob = torch.cat(tuple(id_prob), dim=1)
             preds = list(torch.argmax(combine_prob, dim=1))
