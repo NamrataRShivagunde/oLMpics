@@ -203,6 +203,7 @@ def evaluate_qa_task(config, model, tokenizer, eval_dataset, data_path):
             #replace [MASK] with the index of first pad token as it will be the last token 
             for i in range(len(batch["input_ids"])):
                   question = batch["input_ids"][i]
+                  print(question)
                   MASK_INDEX = (question==tokenizer.mask_token_id).nonzero().item()
                   batch["input_ids"][i, MASK_INDEX] = 220
           
@@ -268,7 +269,7 @@ def main():
         transformers.set_seed(config.seed)
 
         #dataset_dict = {"data-qa/hypernym_conjunction_dev.jsonl":3, "data-qa/composition_v2_dev.jsonl":3, "data-qa/conjunction_filt4_dev.jsonl":3}
-        dataset_dict = {"data-qa/composition_v2_dev.jsonl":3, "data-qa/conjunction_filt4_dev.jsonl":3, "data-qa/hypernym_conjunction_dev.jsonl":3}
+        dataset_dict = {"data-qa/hypernym_conjunction_dev.jsonl":3}
         results = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "accuracy_mean", "CI", "accuracy_min", "accuracy_max"])
 
         results = zero_shot_evaluation(config, dataset_dict, args.modelname, results)
