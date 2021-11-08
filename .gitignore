@@ -50,3 +50,9 @@ MANIFEST
 
 # Per-project virtualenvs
 .venv*/
+
+# design and local files
+experiment-design
+norm-analysis-of-transformer
+bowman block structure.pdf
+gpt2-results-img

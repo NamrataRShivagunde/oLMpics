@@ -49,7 +49,7 @@ def get_configuration():
         overwrite_output_dir=True,
         do_train=False,  # Zero shot
         do_eval=True,
-        per_device_eval_batch_size=2,
+        per_device_eval_batch_size=8,
         learning_rate=1e-5,  # Should not matter because not training
         weight_decay=0.1,
         save_total_limit=2,

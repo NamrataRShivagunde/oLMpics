@@ -3,3 +3,12 @@ CUDA_VISIBLE_DEVICES=1, python gpt2_mc_mlm.py gpt2 True
 
 # for random partition data
 CUDA_VISIBLE_DEVICES=1, python gpt2_mc_mlm.py gpt2 False 
+
+CUDA_VISIBLE_DEVICES=1, python gpt2_mc_mlm.py EleutherAI/gpt-neo-1.3B False 
+
+CUDA_VISIBLE_DEVICES=1, python gpt2_mc_mlm.py EleutherAI/gpt-j-6B False 
+
+
+QA task
+
+CUDA_VISIBLE_DEVICES=1, python gpt2_mc_qa.py gpt2
