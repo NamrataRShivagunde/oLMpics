@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader, SequentialSampler
+from transformers import GPT2Tokenizer, GPTJForCausalLM
 
 import transformers
 #import wandb
@@ -198,7 +199,6 @@ def evaluate_qa_task(config, device, model, tokenizer, eval_dataset, data_path):
         for key in batch:
             batch[key] = torch.stack(batch[key], dim=-1).to(device)
       
-        print(data_path)
         with torch.no_grad():
           if data_path == "data-qa/hypernym_conjunction_dev.jsonl":
             #replace [MASK] with the index of first pad token as it will be the last token 
@@ -227,9 +227,16 @@ def zero_shot_evaluation(config, device, dataset_dict, model_name, results):
 
     AgeDataset = RoBERTaDataset if any(prefix in model_name.lower() for prefix in ("roberta", "bart", "distil", "gpt")) else BERTDataset
     
-    model = transformers.AutoModelWithLMHead.from_pretrained(model_name).to(device)
-    tokenizer = transformers.AutoTokenizer.from_pretrained(model_name , mask_token = '[MASK]')
-    tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
+    
+    if model_name == 'EleutherAI/gpt-j-6B':
+        model = GPTJForCausalLM.from_pretrained(model_name, mask_token = '[MASK]')
+        tokenizer = GPT2Tokenizer.from_pretrained(model_name, torch_dtype=torch.float16,).to(device)
+        tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
+    
+    else:
+        model = transformers.AutoModelWithLMHead.from_pretrained(model_name).to(device)
+        tokenizer = transformers.AutoTokenizer.from_pretrained(model_name, mask_token = '[MASK]')
+        tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
     
     for task_name, num_choices in dataset_dict.items():
             accuracy = []
