@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader, SequentialSampler
-from transformers import GPT2Tokenizer, GPTJForCausalLM
 
 import transformers
 #import wandb
@@ -229,8 +228,8 @@ def zero_shot_evaluation(config, device, dataset_dict, model_name, results):
     
     
     if model_name == 'EleutherAI/gpt-j-6B':
-        model = GPTJForCausalLM.from_pretrained(model_name, mask_token = '[MASK]')
-        tokenizer = GPT2Tokenizer.from_pretrained(model_name, torch_dtype=torch.float16,).to(device)
+        model = transformers.AutoModelForCausalLM.from_pretrained(model_name, mask_token = '[MASK]')
+        tokenizer = transformers.AutoTokenizer.from_pretrained(model_name, torch_dtype=torch.float16,).to(device)
         tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
     
     else:
