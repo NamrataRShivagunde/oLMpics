@@ -299,9 +299,14 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
     AgeDataset = RoBERTaDataset if any(prefix in model_name.lower() 
         for prefix in ("roberta", "bart", "distil", "gpt")) else BERTDataset
 
-    model = transformers.AutoModelWithLMHead.from_pretrained(model_name).cuda()
-    tokenizer = transformers.AutoTokenizer.from_pretrained(model_name , mask_token = '[MASK]')
-    tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
+    if model_name == 'EleutherAI/gpt-j-6B':
+        model = transformers.AutoModelForCausalLM.from_pretrained(model_name)
+        tokenizer = transformers.AutoTokenizer.from_pretrained(model_name, torch_dtype=torch.float16).to(device)
+        tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
+    else:
+        model = transformers.AutoModelWithLMHead.from_pretrained(model_name).cuda()
+        tokenizer = transformers.AutoTokenizer.from_pretrained(model_name , mask_token = '[MASK]')
+        tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
 
     if seq_flag == 'False':
         print("Dividing the dataset RANDOMLY.")
