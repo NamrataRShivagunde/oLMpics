@@ -300,8 +300,8 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
         for prefix in ("roberta", "bart", "distil", "gpt")) else BERTDataset
 
     if model_name == 'EleutherAI/gpt-j-6B':
-        model = transformers.AutoModelForCausalLM.from_pretrained(model_name)
-        tokenizer = transformers.AutoTokenizer.from_pretrained(model_name, torch_dtype=torch.float16).to(device)
+        model = transformers.AutoModelForCausalLM.from_pretrained(model_name, revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True)
+        tokenizer = transformers.AutoTokenizer.from_pretrained(model_name).to(device)
         tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
     else:
         model = transformers.AutoModelWithLMHead.from_pretrained(model_name).cuda()
