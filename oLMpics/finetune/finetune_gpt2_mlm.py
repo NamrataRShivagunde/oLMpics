@@ -26,10 +26,6 @@ def get_args():
     """ Set hyperparameters """
     parser = argparse.ArgumentParser()
     parser.add_argument("model_name_or_path",
-    help="True or False, set False for random division during evaluation")
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("results_seq_flag",
     help="Huggingface pretrained model name/path")
 
     parser.add_argument("train_data_path",
