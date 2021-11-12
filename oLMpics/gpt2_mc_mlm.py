@@ -312,12 +312,12 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
         print("Dividing the dataset RANDOMLY.")
         for task_name, num_choices in dataset_dict.items():
             accuracy = []
-            for i in range(5):
+            for i in range(1):
               print("Evaluation {} with {} on {}".format(i, model_name, task_name))
               eval_questions, eval_choices, eval_answer_ids = get_data(task_name, config.sample_eval, num_choices)
               combined_dataset = {'que': eval_questions, 'choices': eval_choices, 'ids': eval_answer_ids, }
               combined_dataset = pd.DataFrame(data=combined_dataset)
-              sampled_dataset = combined_dataset.sample(frac = 0.8)
+              sampled_dataset = combined_dataset.sample(frac = 1)
               eval_questions = list(sampled_dataset['que'])
               eval_choices = list(sampled_dataset['choices'])
               eval_answer_ids = list(sampled_dataset['ids'])
@@ -342,23 +342,23 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
         print("Dividing the dataset into five parts sequentially.")
         for task_name, num_choices in dataset_dict_seq.items():
               accuracy = []
-              for i in range(5):
+              for i in range(1):
                   eval_questions, eval_choices, eval_answer_ids = get_data(task_name, config.sample_eval, num_choices)
-                  total_items = len(eval_questions)
-                  n = int(total_items/5)
-                  if i==0:
-                    eval_questions = eval_questions[n:]
-                    eval_choices = eval_choices[n:]
-                    eval_answer_ids = eval_answer_ids[n:] 
-                  elif i==4:
-                    eval_questions = eval_questions[:4*n]
-                    eval_choices = eval_choices[:4*n]
-                    eval_answer_ids = eval_answer_ids[:4*n]
+                #   total_items = len(eval_questions)
+                #   n = int(total_items/5)
+                #   if i==0:
+                #     eval_questions = eval_questions[n:]
+                #     eval_choices = eval_choices[n:]
+                #     eval_answer_ids = eval_answer_ids[n:] 
+                #   elif i==4:
+                #     eval_questions = eval_questions[:4*n]
+                #     eval_choices = eval_choices[:4*n]
+                #     eval_answer_ids = eval_answer_ids[:4*n]
                     
-                  else:
-                    eval_questions = eval_questions[:i*n] + eval_questions[(i+1)*n:]
-                    eval_choices = eval_choices[:i*n] + eval_choices[(i+1)*n:]
-                    eval_answer_ids = eval_answer_ids[:i*n] + eval_answer_ids[(i+1)*n:]   
+                #   else:
+                #     eval_questions = eval_questions[:i*n] + eval_questions[(i+1)*n:]
+                #     eval_choices = eval_choices[:i*n] + eval_choices[(i+1)*n:]
+                #     eval_answer_ids = eval_answer_ids[:i*n] + eval_answer_ids[(i+1)*n:]   
 
                   eval_dataset = AgeDataset(eval_questions, eval_choices, eval_answer_ids, tokenizer)
                   all_answers, all_preds = evaluate_mc_mlm(config, model, tokenizer, eval_dataset)
@@ -394,14 +394,14 @@ def main():
     results = zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq, model_name_or_path, results, results_seq, seq_flag)
 
     if seq_flag == 'False':
-        if model_name_or_path == 'EleutherAI/gpt-neo-1.3B':
+        if model_name_or_path == 'EleutherAI/gpt-neo-2.7B':
             results.to_excel('gpt2-results/gpt-neo-results.xlsx')
         elif  model_name_or_path == 'EleutherAI/gpt-j-6B':
             results.to_excel('gpt2-results/gpt-j-results.xlsx')
         else:
             results.to_excel('gpt2-results/{}-results.xlsx'.format(model_name_or_path))
     else:
-        if model_name_or_path == 'EleutherAI/gpt-neo-1.3B':
+        if model_name_or_path == 'EleutherAI/gpt-neo-2.7B':
             results.to_excel('gpt2-results/gpt-neo-seq-results.xlsx')
         elif  model_name_or_path == 'EleutherAI/gpt-j-6B':
             results.to_excel('gpt2-results/gpt-j-seq-results.xlsx')
