@@ -355,7 +355,7 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
             all_preds.extend(preds)
 
             # to get eval_loss, create labels and pass it as arguments to model
-            for i in range(len(batch["input_ids")):
+            for i in range(len(batch["input_ids"])):
                 question = batch["input_ids"][i]
                 MASK_INDEX = list_of_mask_index[i]
                 batch["input_ids"][i, MASK_INDEX] =  labels_for_eval_loss[i]
