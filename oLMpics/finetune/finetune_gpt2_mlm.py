@@ -409,7 +409,7 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
                 labels.append(actual_label)
 
             # to get eval_loss, create labels and pass it as arguments to model
-            for i in range(len(batch["input_ids"]):
+            for i in range(len(batch["input_ids"])):
                 question = batch["input_ids"][i]
                 MASK_INDEX = (question==tokenizer.mask_token_id).nonzero().item()
                 batch["input_ids"][i, MASK_INDEX] =  labels[i]
