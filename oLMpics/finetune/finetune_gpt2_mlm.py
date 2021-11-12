@@ -397,9 +397,6 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
 
     label_dict = {}
     label_encodings = {}
-    all_answers = []
-    all_preds = []
-    eval_loss = 0
     list_of_labels = eval_dataset[0]['choice_list']
 
     # Adding keys and values to dictionary label_encodings
