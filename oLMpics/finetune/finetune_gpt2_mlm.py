@@ -276,7 +276,7 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
 
     logger.info(f"***** Running evaluation  *****")
     logger.info(f"  Num examples = {len(eval_dataset)}")
-    logger.info(f"  Batch size = {args.eval_batch_size}")
+    logger.info(f"  Batch size = {args.per_device_eval_batch_size}")
     eval_dataloader = tqdm(eval_dataloader, desc="Evaluating")
     
     #encoding all the labels
