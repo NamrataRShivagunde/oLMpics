@@ -304,7 +304,7 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
         tokenizer = transformers.AutoTokenizer.from_pretrained(model_name).to(device)
         tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
     else:
-        model = transformers.AutoModelWithLMHead.from_pretrained(model_name).cuda()
+        model = transformers.AutoModelWithLMHead.from_pretrained(model_name).to(device)
         tokenizer = transformers.AutoTokenizer.from_pretrained(model_name , mask_token = '[MASK]')
         tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
 
@@ -342,23 +342,23 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
         print("Dividing the dataset into five parts sequentially.")
         for task_name, num_choices in dataset_dict_seq.items():
               accuracy = []
-              for i in range(1):
+              for i in range(5):
                   eval_questions, eval_choices, eval_answer_ids = get_data(task_name, config.sample_eval, num_choices)
-                #   total_items = len(eval_questions)
-                #   n = int(total_items/5)
-                #   if i==0:
-                #     eval_questions = eval_questions[n:]
-                #     eval_choices = eval_choices[n:]
-                #     eval_answer_ids = eval_answer_ids[n:] 
-                #   elif i==4:
-                #     eval_questions = eval_questions[:4*n]
-                #     eval_choices = eval_choices[:4*n]
-                #     eval_answer_ids = eval_answer_ids[:4*n]
+                  total_items = len(eval_questions)
+                  n = int(total_items/5)
+                  if i==0:
+                    eval_questions = eval_questions[n:]
+                    eval_choices = eval_choices[n:]
+                    eval_answer_ids = eval_answer_ids[n:] 
+                  elif i==4:
+                    eval_questions = eval_questions[:4*n]
+                    eval_choices = eval_choices[:4*n]
+                    eval_answer_ids = eval_answer_ids[:4*n]
                     
-                #   else:
-                #     eval_questions = eval_questions[:i*n] + eval_questions[(i+1)*n:]
-                #     eval_choices = eval_choices[:i*n] + eval_choices[(i+1)*n:]
-                #     eval_answer_ids = eval_answer_ids[:i*n] + eval_answer_ids[(i+1)*n:]   
+                  else:
+                    eval_questions = eval_questions[:i*n] + eval_questions[(i+1)*n:]
+                    eval_choices = eval_choices[:i*n] + eval_choices[(i+1)*n:]
+                    eval_answer_ids = eval_answer_ids[:i*n] + eval_answer_ids[(i+1)*n:]   
 
                   eval_dataset = AgeDataset(eval_questions, eval_choices, eval_answer_ids, tokenizer)
                   all_answers, all_preds = evaluate_mc_mlm(config, model, tokenizer, eval_dataset)
