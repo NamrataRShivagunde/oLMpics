@@ -257,7 +257,7 @@ def get_sentence_prob(input_ids, logits, list_of_endtoken_index):
     probs = torch.sum(torch.log(probs), dim=1)
     return probs
 
-def evaluate(config, model, tokenizer, eval_dataset, is_train=False):
+def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
     """
     Args:
         args:
@@ -272,11 +272,11 @@ def evaluate(config, model, tokenizer, eval_dataset, is_train=False):
         preds - list of labels predicted by model
     """
     eval_sampler = SequentialSampler(eval_dataset)
-    eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=config.per_device_eval_batch_size)
+    eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=args.per_device_eval_batch_size)
 
     logger.info(f"***** Running evaluation  *****")
     logger.info(f"  Num examples = {len(eval_dataset)}")
-    logger.info(f"  Batch size = {config.eval_batch_size}")
+    logger.info(f"  Batch size = {args.eval_batch_size}")
     eval_dataloader = tqdm(eval_dataloader, desc="Evaluating")
     
     #encoding all the labels
