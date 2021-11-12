@@ -310,7 +310,6 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
             actual_label = batch["choice_list"][true_label_id][loop_counter]
             label_id_to_append = label_dict[actual_label]
             all_answers.append(label_id_to_append)
-            print(label_id_encoding_map[true_label_id.item()])
             labels_for_eval_loss.append(label_id_encoding_map[true_label_id.item()])
            
         del batch["choice_list"] 
@@ -362,7 +361,7 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
                 MASK_INDEX = list_of_mask_index[i]
                 batch["input_ids"][i, MASK_INDEX] =  labels_for_eval_loss[i]
             
-            outputs = model(**original_batch, label =  batch["input_ids"])    
+            outputs = model(**original_batch, labels =  batch["input_ids"])    
             eval_loss += outputs.loss
 
     eval_loss /= len(eval_dataset)
@@ -412,7 +411,6 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
       loop_counter+=1
 
     label_id_encoding_map = dict(zip(label_dict.values(),label_encodings.values()))
-    print(label_id_encoding_map)
 
     for epoch in tqdm(range(args.num_train_epochs)):
         for step, batch in enumerate(train_dataloader):
@@ -426,8 +424,7 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
             for loop_counter in range(len(batch["answer_id"])):
                 true_label_id = batch["answer_id"][loop_counter]
                 #actual_label = batch["choice_list"][true_label_id][loop_counter]
-                print(label_id_encoding_map[true_label_id])
-                labels.append(label_id_encoding_map[true_label_id])
+                labels.append(label_id_encoding_map[true_label_id.item()])
 
             # to get eval_loss, create labels and pass it as arguments to model
             for i in range(len(batch["input_ids"])):
@@ -435,7 +432,7 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
                 MASK_INDEX = (question==tokenizer.mask_token_id).nonzero().item()
                 batch["input_ids"][i, MASK_INDEX] =  labels[i]
             
-            outputs = model(**original_batch, label =  batch["input_ids"])    
+            outputs = model(**original_batch, labels =  batch["input_ids"])    
             loss = outputs.loss
             
             accumulated_loss += float(loss)
