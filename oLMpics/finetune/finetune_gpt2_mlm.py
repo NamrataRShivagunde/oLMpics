@@ -258,6 +258,7 @@ def get_sentence_prob(input_ids, logits, list_of_endtoken_index):
     probs = torch.sum(torch.log(probs), dim=1)
     return probs
 
+
 def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
     """
     Args:
@@ -300,12 +301,15 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
  
     for batch in eval_dataloader:       
         model.eval()
+        original_batch = batch
+        labels_for_eval_loss = []
         # Creating the list all_answers  which has all the true labels 
         for loop_counter in range(len(batch["answer_id"])):
             true_label_id = batch["answer_id"][loop_counter]
             actual_label = batch["choice_list"][true_label_id][loop_counter]
             label_id_to_append = label_dict[actual_label]
             all_answers.append(label_id_to_append)
+            labels_for_eval_loss.append(actual_label)
            
         del batch["choice_list"] 
         
@@ -338,9 +342,9 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
                     MASK_INDEX = list_of_mask_index[loop_counter]
                     batch["input_ids"][loop_counter, MASK_INDEX] =  label_id_encoding_map[label_counter]
 
-                outputs = model(**batch)
-                eval_loss += outputs.loss   
-                logits = outputs.logits
+                outputs_prob = model(**batch)
+                logits = outputs_prob.logits
+
                 batch_size = len(batch["input_ids"])
                 id_prob.append(
                     torch.reshape(get_sentence_prob(batch["input_ids"], logits, list_of_endtoken_index),  
@@ -349,6 +353,15 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
             combine_prob = torch.cat(tuple(id_prob), dim=1)
             preds = list(torch.argmax(combine_prob, dim=1))
             all_preds.extend(preds)
+
+            # to get eval_loss, create labels and pass it as arguments to model
+            for i in range(len(batch["input_ids")):
+                question = batch["input_ids"][i]
+                MASK_INDEX = list_of_mask_index[i]
+                batch["input_ids"][i, MASK_INDEX] =  labels_for_eval_loss[i]
+            
+            outputs = model(**original_batch, label =  batch["input_ids"])    
+            eval_loss += outputs.loss
 
     eval_loss /= len(eval_dataset)
     if is_train:
@@ -388,27 +401,22 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
             else:
                 model.train()
             
-             # batch["choice_list"] is [num_choices, batch_size]
-            curr_answers = []
-            for i in range(len(batch["choice_list"][0])):
-                curr_answers.append(batch["choice_list"][batch["answer_id"][i]][i])
+            labels = []
+            # batch["choice_list"] is [num_choices, batch_size]
+            for loop_counter in range(len(batch["answer_id"])):
+                true_label_id = batch["answer_id"][loop_counter]
+                actual_label = batch["choice_list"][true_label_id][loop_counter])
+                labels.append(actual_label)
 
-            choice_lists = batch.pop("choice_list")
-            batch_len = len(batch["answer_id"])
-            del batch["answer_id"]
-            for key in batch:
-                batch[key] = torch.stack(batch[key], dim=-1).to(args.device)
-
-            MASK_INDEX = batch["input_ids"][0].tolist().index(MASK_ID)
-            labels = torch.full((batch["input_ids"].size()[:2]), -100, device=args.device)
-            # labels = batch["input_ids"].detach().clone()
-            for i, curr_answer in enumerate(curr_answers):
-                MASK_INDEX = batch["input_ids"][i].tolist().index(MASK_ID)
-                assert len(tokenizer.encode(" " + curr_answer, add_special_tokens=False)) == 1
-                labels[i][MASK_INDEX] = tokenizer.encode(" " + curr_answer, add_special_tokens=False)[0]
-
-            outputs = model(**batch, labels=labels)
+            # to get eval_loss, create labels and pass it as arguments to model
+            for i in range(len(batch["input_ids")):
+                question = batch["input_ids"][i]
+                MASK_INDEX = (question==tokenizer.mask_token_id).nonzero().item()
+                batch["input_ids"][i, MASK_INDEX] =  labels[i]
+            
+            outputs = model(**original_batch, label =  batch["input_ids"])    
             loss = outputs.loss
+            
             accumulated_loss += float(loss)
             if (step + 1) % args.gradient_accumulation_steps == 0:
                 wandb.log({"train_loss": accumulated_loss.item()})
@@ -446,6 +454,7 @@ def main():
     model = transformers.AutoModelWithLMHead.from_pretrained(args.model_name_or_path).to(args.device)
     tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_name_or_path , mask_token = '[MASK]')
     tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
+    model.resize_token_embeddings(len(tokenizer))
 
     AgeDataset = RoBERTaDataset if any(prefix in args.model_name_or_path.lower() \
     for prefix in ("roberta", "bart", "distil", "electra", "t5", "gpt")) else BERTDataset
