@@ -108,7 +108,8 @@ def get_args():
     )
     parser.add_argument(
         "--device",
-        default="cuda" if torch.cuda.is_available() else "cpu"
+        default="cpu"
+        #default="cuda" if torch.cuda.is_available() else "cpu"
     )
 
     args = parser.parse_args()
@@ -311,7 +312,7 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
         for key in batch:
             if key != "answer_id":
                 batch[key] = torch.stack(batch[key], dim=-1)
-            batch[key] = batch[key].cuda()
+            batch[key] = batch[key].to(args.device)
          
         _ = batch.pop("answer_id")
         label_encoding_list = list(label_encodings.values())
