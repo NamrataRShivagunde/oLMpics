@@ -307,13 +307,11 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
         # Creating the list all_answers  which has all the true labels 
         for loop_counter in range(len(batch["answer_id"])):
             true_label_id = batch["answer_id"][loop_counter]
-            print(true_label_id)
-            print(type(true_label_id))
             actual_label = batch["choice_list"][true_label_id][loop_counter]
             label_id_to_append = label_dict[actual_label]
             all_answers.append(label_id_to_append)
-            print(label_id_encoding_map[int(true_label_id)])
-            labels_for_eval_loss.append(label_id_encoding_map[true_label_id])
+            print(label_id_encoding_map[true_label_id.item()])
+            labels_for_eval_loss.append(label_id_encoding_map[true_label_id.item()])
            
         del batch["choice_list"] 
         
