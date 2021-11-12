@@ -189,53 +189,51 @@ class CustomArguments(transformers.TrainingArguments):
             raise TypeError("__init__ missing required argument(s)")
 
 class BERTDataset(Dataset):
-    """ 
-    Data class for BERT and RoBERTa.
-    """
-    def __init__(self, questions, choices, answer_ids, tokenizer):
-        out = tokenizer(questions)
+    """ Dataset with token_type_ids (used for BERT, ALBERT) """
+    def __init__(self, questions, choices, answer_ids, tokenizer, max_length):
+        out = tokenizer(questions, max_length=max_length, padding="max_length", truncation=True)
         self.input_ids = out["input_ids"]
         self.token_type_ids = out["token_type_ids"]
         self.attention_mask = out["attention_mask"]
         self.questions = questions
         self.choices = choices
         self.answer_ids = answer_ids
-        
+
     def __len__(self):
         return len(self.questions)
 
     def __getitem__(self, i):
         return {
-            "input_ids": self.input_ids[i], 
-            "attention_mask": self.attention_mask[i], 
+            "input_ids": self.input_ids[i],
+            "attention_mask": self.attention_mask[i],
             "token_type_ids": self.token_type_ids[i],
-            "choice_list": self.choices[i], 
+            "choice_list": self.choices[i],
             "answer_id": self.answer_ids[i],
         }
+
     
 class RoBERTaDataset(Dataset):
-    """ 
-    Data class for RoBERTa.
-    Only difference is that BERTDataset has token_type_ids while RoBERTaDataset doesn't
-    """
-    def __init__(self, questions, choices, answer_ids, tokenizer):
-        out = tokenizer(questions, max_length=25, padding="max_length")
+    """ Dataset without token_type_ids (used for RoBERTa, BART, Distil, ELECTRA, T5) """
+    def __init__(self, questions, choices, answer_ids, tokenizer, max_length):
+        questions = [question.replace('[MASK]', tokenizer.mask_token) for question in questions]
+        out = tokenizer(questions, max_length=max_length, padding="max_length", truncation=True)
         self.input_ids = out["input_ids"]
         self.attention_mask = out["attention_mask"]
         self.questions = questions
         self.choices = choices
         self.answer_ids = answer_ids
-        
+
     def __len__(self):
         return len(self.questions)
 
     def __getitem__(self, i):
         return {
-            "input_ids": self.input_ids[i], 
-            "attention_mask": self.attention_mask[i], 
-            "choice_list": self.choices[i], 
+            "input_ids": self.input_ids[i],
+            "attention_mask": self.attention_mask[i],
+            "choice_list": self.choices[i],
             "answer_id": self.answer_ids[i],
         }
+
 
 def get_sentence_prob(input_ids, logits, list_of_endtoken_index):
     """
