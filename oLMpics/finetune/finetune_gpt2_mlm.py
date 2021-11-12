@@ -108,8 +108,8 @@ def get_args():
     )
     parser.add_argument(
         "--device",
-        #default="cpu"
-        default="cuda" if torch.cuda.is_available() else "cpu"
+        default="cpu"
+        #default="cuda" if torch.cuda.is_available() else "cpu"
     )
 
     args = parser.parse_args()
