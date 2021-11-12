@@ -298,6 +298,7 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
       loop_counter+=1
 
     label_id_encoding_map = dict(zip(label_dict.values(),label_encodings.values()))
+    print(label_id_encoding_map)
  
     for batch in eval_dataloader:       
         model.eval()
@@ -393,6 +394,24 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
     assert len(MASK_ID) == 1
     MASK_ID = MASK_ID[0]
     accumulated_loss = torch.tensor(0.0).to(args.device)
+
+    label_dict = {}
+    label_encodings = {}
+    all_answers = []
+    all_preds = []
+    eval_loss = 0
+    list_of_labels = eval_dataset[0]['choice_list']
+
+    # Adding keys and values to dictionary label_encodings
+    loop_counter=0
+    for label in list_of_labels:
+      label_dict[label] = loop_counter
+      label1 = " "+ label
+      label_encodings[label1] = tokenizer.encode(label1, add_special_tokens=False)[0]
+      loop_counter+=1
+
+    label_id_encoding_map = dict(zip(label_dict.values(),label_encodings.values()))
+    print(label_id_encoding_map)
 
     for epoch in tqdm(range(args.num_train_epochs)):
         for step, batch in enumerate(train_dataloader):
