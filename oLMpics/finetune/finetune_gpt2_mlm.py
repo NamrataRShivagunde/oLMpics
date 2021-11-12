@@ -434,7 +434,7 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
 def main():
     args = get_args()
 
-    wandb.init(project="oLMpics", entity="frostbyte", group="Nov1", \
+    wandb.init(project="oLMpics", entity="namratashivagunde", group="Nov1", \
                name=f"{args.model_name_or_path}_{args.train_data_path[5:-6]}")
     wandb.config.update(args)
 
