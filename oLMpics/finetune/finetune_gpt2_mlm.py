@@ -405,7 +405,7 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
             # batch["choice_list"] is [num_choices, batch_size]
             for loop_counter in range(len(batch["answer_id"])):
                 true_label_id = batch["answer_id"][loop_counter]
-                actual_label = batch["choice_list"][true_label_id][loop_counter])
+                actual_label = batch["choice_list"][true_label_id][loop_counter]
                 labels.append(actual_label)
 
             # to get eval_loss, create labels and pass it as arguments to model
