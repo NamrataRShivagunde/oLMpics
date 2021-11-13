@@ -59,7 +59,7 @@ def reformat_stem_pattern5(question_text):
   return reformatted_text
 
 #test the reformatting
-print(reformat_stem_pattern3('It was [MASK] sane, it was really insane.'))
+print(reformat_stem_pattern4('It was [MASK] sane, it was really insane.'))
 #this should result in 'He was really ready to rest. Was he ready to pillow ?'
 #He was really ready to rest. Was he ready to pillow ?
 
@@ -86,7 +86,7 @@ def get_data(file_path, sample, num_choices):
         
 
         #reformatting
-        question_text = reformat_stem_pattern3(question_text)
+        question_text = reformat_stem_pattern4(question_text)
        
 
         choice_label_to_id = {}
