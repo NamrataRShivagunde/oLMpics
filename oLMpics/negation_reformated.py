@@ -280,7 +280,7 @@ data  = "data/quantifiers_coffee_cats_quantifiers_dev.jsonl" , args.num_choices 
 '''
 
 args.num_choices = 2
-args.model_name_or_path = 'gpt2'
+args.model_name_or_path = 'gpt2-xl'
 data = "data/negation_antonym_synonym_negation_dev.jsonl"
 
 #train_questions, train_choices, train_answer_ids = get_data(, args.sample_train, args.num_choices)
