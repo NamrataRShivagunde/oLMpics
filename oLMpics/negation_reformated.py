@@ -59,7 +59,7 @@ def reformat_stem_pattern5(question_text):
   return reformatted_text
 
 #test the reformatting
-reformat_stem_pattern1('He was [MASK] ready to pillow, He was really ready to rest.')
+print(reformat_stem_pattern1('He was [MASK] ready to pillow, He was really ready to rest.'))
 #this should result in 'He was really ready to rest. Was he ready to pillow ?'
 #He was really ready to rest. Was he ready to pillow ?
 
