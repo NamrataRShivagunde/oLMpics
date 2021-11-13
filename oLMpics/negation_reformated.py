@@ -59,7 +59,7 @@ def reformat_stem_pattern5(question_text):
   return reformatted_text
 
 #test the reformatting
-reformat_stem_pattern5('He was [MASK] ready to pillow, He was really ready to rest.')
+print(reformat_stem_pattern1('He was [MASK] ready to pillow, He was really ready to rest.'))
 #this should result in 'He was really ready to rest. Was he ready to pillow ?'
 #He was really ready to rest. Was he ready to pillow ?
 
@@ -86,7 +86,7 @@ def get_data(file_path, sample, num_choices):
         
 
         #reformatting
-        question_text = reformat_stem_pattern5(question_text)
+        question_text = reformat_stem_pattern1(question_text)
        
 
         choice_label_to_id = {}
@@ -280,7 +280,7 @@ data  = "data/quantifiers_coffee_cats_quantifiers_dev.jsonl" , args.num_choices 
 '''
 
 args.num_choices = 2
-args.model_name_or_path = 'gpt2-xl'
+args.model_name_or_path = 'gpt2'
 data = "data/negation_antonym_synonym_negation_dev.jsonl"
 
 #train_questions, train_choices, train_answer_ids = get_data(, args.sample_train, args.num_choices)
@@ -304,11 +304,6 @@ tokenizer.convert_ids_to_tokens(50256)
 print("lenght of all_answers = ",len(all_answers))
 print("lenght of all_preds = ",len(all_preds))
 all_pred = []
-'''for i in all_preds:
-    all_pred.append(i.cpu().item())'''
-
-print("first 10 enteries of all_answers = ", all_answers[:10])
-print("first 10 enteries of all_pred = ", all_preds[:10])
 
 total = 0
 for i in range(len(all_answers)):
