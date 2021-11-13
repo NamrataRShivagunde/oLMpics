@@ -239,7 +239,7 @@ def evaluate_qa_task(args, model, tokenizer, eval_dataset, data_path):
 
         del batch["answer_id"] 
         for key in batch:
-            batch[key] = torch.stack(batch[key], dim=-1)#.cuda()
+            batch[key] = torch.stack(batch[key], dim=-1).cuda()
       
         
         with torch.no_grad():       
@@ -260,8 +260,8 @@ def evaluate_qa_task(args, model, tokenizer, eval_dataset, data_path):
                 choice_ids[not_indices] = 645
                 choice_ids[really_indices] = 3763
 
-                choice_ids = choice_ids#.cuda()
-                probs = logit[first_pad_index-1].index_select(0, choice_ids)#.cuda()
+                choice_ids = choice_ids.cuda()
+                probs = logit[first_pad_index-1].index_select(0, choice_ids).cuda()
                 max_ind = torch.argmax(probs)
                 all_preds.append(choice_lists[max_ind][i])
             
@@ -286,7 +286,7 @@ data = "data/negation_antonym_synonym_negation_dev.jsonl"
 #train_questions, train_choices, train_answer_ids = get_data(, args.sample_train, args.num_choices)
 eval_questions, eval_choices, eval_answer_ids = get_data(data, args.sample_eval, args.num_choices)
 
-model = transformers.AutoModelWithLMHead.from_pretrained(args.model_name_or_path)#.cuda()
+model = transformers.AutoModelWithLMHead.from_pretrained(args.model_name_or_path).cuda()
 tokenizer = transformers.AutoTokenizer.from_pretrained(args.model_name_or_path , mask_token = '[MASK]')
 tokenizer.pad_token = tokenizer.eos_token
 
