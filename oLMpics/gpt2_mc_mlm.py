@@ -341,10 +341,10 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
     else:
         print("Dividing the dataset into five parts sequentially.")
         for task_name, num_choices in dataset_dict_seq.items():
-              accuracy = []
-              for i in range(3):
-                  eval_questions, eval_choices, eval_answer_ids = get_data(task_name, config.sample_eval, num_choices)
-                  total_items = len(eval_questions)
+            accuracy = []
+            for i in range(3):
+                eval_questions, eval_choices, eval_answer_ids = get_data(task_name, config.sample_eval, num_choices)
+                total_items = len(eval_questions)
                 # Age groups 10-20, 20-30, 30-40
 
                 if i == 0: # Age group 10-20
@@ -359,7 +359,7 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
                     eval_questions = eval_questions[354:]
                     eval_choices = eval_choices[354:]
                     eval_answer_ids = eval_answer_ids[354:]
-                     
+                    
                 # Cross validation splits
                 #   n = int(total_items/5)
                 #   if i==0:
@@ -376,22 +376,22 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
                 #     eval_choices = eval_choices[:i*n] + eval_choices[(i+1)*n:]
                 #     eval_answer_ids = eval_answer_ids[:i*n] + eval_answer_ids[(i+1)*n:]   
 
-                  eval_dataset = AgeDataset(eval_questions, eval_choices, eval_answer_ids, tokenizer)
-                  all_answers, all_preds = evaluate_mc_mlm(config, model, tokenizer, eval_dataset)
-                  counter_a = 0
-                  counter_b = 0
-                  for i in range(len(all_answers)):
+                eval_dataset = AgeDataset(eval_questions, eval_choices, eval_answer_ids, tokenizer)
+                all_answers, all_preds = evaluate_mc_mlm(config, model, tokenizer, eval_dataset)
+                counter_a = 0
+                counter_b = 0
+                for i in range(len(all_answers)):
                     if all_preds[i] != -1:
                         counter_b += 1
                         if all_preds[i] == all_answers[i]:
                             counter_a += 1
-                  current_acc = counter_a/counter_b
-                  accuracy.append(current_acc)
+                current_acc = counter_a/counter_b
+                accuracy.append(current_acc)
               
-              mini, maxi = st.t.interval(alpha=0.95, df=len(accuracy)-1, loc=np.mean(accuracy), scale=st.sem(accuracy)) #sample size less than 30
+            mini, maxi = st.t.interval(alpha=0.95, df=len(accuracy)-1, loc=np.mean(accuracy), scale=st.sem(accuracy)) #sample size less than 30
 
-              result_new = {'model_name': model_name, 'task_name':task_name, 'accuracy_5_runs':str(np.array(accuracy)), 'accuracy_mean': np.array(accuracy).mean()*100, 'CI':-1* np.array(accuracy).mean()*100+maxi*100, 'accuracy_min':mini, 'accuracy_max':maxi  }
-              results_seq = results_seq.append(result_new, ignore_index=True)
+            result_new = {'model_name': model_name, 'task_name':task_name, 'accuracy_5_runs':str(np.array(accuracy)), 'accuracy_mean': np.array(accuracy).mean()*100, 'CI':-1* np.array(accuracy).mean()*100+maxi*100, 'accuracy_min':mini, 'accuracy_max':maxi  }
+            results_seq = results_seq.append(result_new, ignore_index=True)
         return results_seq
 
 def main():
