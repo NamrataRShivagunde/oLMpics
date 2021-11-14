@@ -39,7 +39,7 @@ def get_args():
 
     parser.add_argument(
         "--max_seq_length",
-        default=45,
+        default=25,
         type=int,
     )
     parser.add_argument(
@@ -374,8 +374,8 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
     return (np.array(all_answers) == np.array(all_preds)).mean()
 
 def train(args, model, tokenizer, train_dataset, eval_dataset):
-    eval_acc = evaluate(args, model, tokenizer, eval_dataset)
-    logger.info(f"Initial Eval Accuracy: {eval_acc}")
+    # eval_acc = evaluate(args, model, tokenizer, eval_dataset)
+    # logger.info(f"Initial Eval Accuracy: {eval_acc}")
     # train_acc = evaluate(args, model, tokenizer, train_dataset, is_train=True)
     # logger.info(f"Initial Train Accuracy: {train_acc}")
     # wandb.log({"eval_acc": eval_acc, "train_acc": train_acc})
@@ -398,7 +398,7 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
 
     label_dict = {}
     label_encodings = {}
-    list_of_labels = eval_dataset[0]['choice_list']
+    list_of_labels = train_dataset[0]['choice_list']
 
     # Adding keys and values to dictionary label_encodings
     loop_counter=0
