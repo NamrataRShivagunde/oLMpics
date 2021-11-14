@@ -411,7 +411,8 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
     label_id_encoding_map = dict(zip(label_dict.values(),label_encodings.values()))
 
     for epoch in tqdm(range(args.num_train_epochs)):
-        for step, batch in enumerate(train_dataloader):
+        #or step, batch in enumerate(train_dataloader):
+        for batch in train_dataloader:
             if args.no_dropout:
                 model.eval()
             else:
@@ -426,7 +427,6 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
                 #actual_label = batch["choice_list"][true_label_id][loop_counter]
                 labels.append(label_id_encoding_map[true_label_id.item()])
             
-            print(len(labels))
             # to get eval_loss, create labels and pass it as arguments to model
             for i in range(len(batch["input_ids"])):
                 question = batch["input_ids"][i]
