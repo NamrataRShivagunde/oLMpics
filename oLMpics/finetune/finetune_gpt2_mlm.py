@@ -370,14 +370,14 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
     else:
         wandb.log({"avg_eval_loss": eval_loss})
 
-    return (np.array(all_answers.cpu()) == np.array(all_preds.cpu())).mean()
+    return (np.array(all_answers) == np.array(all_preds)).mean()
 
 def train(args, model, tokenizer, train_dataset, eval_dataset):
-    # eval_acc = evaluate(args, model, tokenizer, eval_dataset)
-    # logger.info(f"Initial Eval Accuracy: {eval_acc}")
-    # train_acc = evaluate(args, model, tokenizer, train_dataset, is_train=True)
-    # logger.info(f"Initial Train Accuracy: {train_acc}")
-    # wandb.log({"eval_acc": eval_acc, "train_acc": train_acc})
+    eval_acc = evaluate(args, model, tokenizer, eval_dataset)
+    logger.info(f"Initial Eval Accuracy: {eval_acc}")
+    train_acc = evaluate(args, model, tokenizer, train_dataset, is_train=True)
+    logger.info(f"Initial Train Accuracy: {train_acc}")
+    wandb.log({"eval_acc": eval_acc, "train_acc": train_acc})
 
     train_sampler = RandomSampler(train_dataset)
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.per_device_train_batch_size)
