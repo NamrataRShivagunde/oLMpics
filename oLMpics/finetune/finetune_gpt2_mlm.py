@@ -352,7 +352,7 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
                     (batch_size, 1)))
 
             combine_prob = torch.cat(tuple(id_prob), dim=1)
-            preds = list(torch.argmax(combine_prob, dim=1))
+            preds = list(torch.argmax(combine_prob, dim=1).cpu())
             all_preds.extend(preds)
 
             # to get eval_loss, create labels and pass it as arguments to model
