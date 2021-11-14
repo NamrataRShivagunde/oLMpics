@@ -39,7 +39,7 @@ def get_args():
 
     parser.add_argument(
         "--max_seq_length",
-        default=25,
+        default=45,
         type=int,
     )
     parser.add_argument(
