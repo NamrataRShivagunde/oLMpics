@@ -420,8 +420,8 @@ def main():
         else:
             results.to_excel('gpt2-results/{}-results.xlsx'.format(model_name_or_path))
     else:
-        if model_name_or_path == 'EleutherAI/gpt-neo-2.7B':
-            results.to_excel('gpt2-results/gpt-neo--age-groups-results.xlsx')
+        if model_name_or_path == 'EleutherAI/gpt-neo-1.3B':
+            results.to_excel('gpt2-results/gpt-neo-age-groups-results.xlsx')
         elif  model_name_or_path == 'EleutherAI/gpt-j-6B':
             results.to_excel('gpt2-results/gpt-j--age-groups-results.xlsx')
         else:
