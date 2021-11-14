@@ -130,6 +130,7 @@ def get_configuration():
         sample_train=200,
         sample_eval=-1,
         num_choices=2,
+        device ="cuda" if torch.cuda.is_available() else "cpu"
     )
     return args
 
@@ -301,10 +302,10 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
 
     if model_name == 'EleutherAI/gpt-j-6B':
         model = transformers.AutoModelForCausalLM.from_pretrained(model_name, revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True)
-        tokenizer = transformers.AutoTokenizer.from_pretrained(model_name).to(device)
+        tokenizer = transformers.AutoTokenizer.from_pretrained(model_name).to(config.device)
         tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
     else:
-        model = transformers.AutoModelWithLMHead.from_pretrained(model_name).to(device)
+        model = transformers.AutoModelWithLMHead.from_pretrained(model_name).to(config.device)
         tokenizer = transformers.AutoTokenizer.from_pretrained(model_name , mask_token = '[MASK]')
         tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
 
