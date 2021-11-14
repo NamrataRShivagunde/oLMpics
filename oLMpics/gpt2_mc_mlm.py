@@ -342,23 +342,39 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
         print("Dividing the dataset into five parts sequentially.")
         for task_name, num_choices in dataset_dict_seq.items():
               accuracy = []
-              for i in range(5):
+              for i in range(3):
                   eval_questions, eval_choices, eval_answer_ids = get_data(task_name, config.sample_eval, num_choices)
                   total_items = len(eval_questions)
-                  n = int(total_items/5)
-                  if i==0:
-                    eval_questions = eval_questions[n:]
-                    eval_choices = eval_choices[n:]
-                    eval_answer_ids = eval_answer_ids[n:] 
-                  elif i==4:
-                    eval_questions = eval_questions[:4*n]
-                    eval_choices = eval_choices[:4*n]
-                    eval_answer_ids = eval_answer_ids[:4*n]
+                # Age groups 10-20, 20-30, 30-40
+
+                if i == 0: # Age group 10-20
+                    eval_questions = eval_questions[:113]
+                    eval_choices = eval_choices[:113]
+                    eval_answer_ids = eval_answer_ids[:113] 
+                if i == 1: # Age group 20-30
+                    eval_questions = eval_questions[113:354]
+                    eval_choices = eval_choices[113:354]
+                    eval_answer_ids = eval_answer_ids[113:354]
+                if i == 2: # Age group 30-40
+                    eval_questions = eval_questions[113:354]
+                    eval_choices = eval_choices[113:354]
+                    eval_answer_ids = eval_answer_ids[113:354]
+                     
+                # Cross validation splits
+                #   n = int(total_items/5)
+                #   if i==0:
+                #     eval_questions = eval_questions[n:]
+                #     eval_choices = eval_choices[n:]
+                #     eval_answer_ids = eval_answer_ids[n:] 
+                #   elif i==4:
+                #     eval_questions = eval_questions[:4*n]
+                #     eval_choices = eval_choices[:4*n]
+                #     eval_answer_ids = eval_answer_ids[:4*n]
                     
-                  else:
-                    eval_questions = eval_questions[:i*n] + eval_questions[(i+1)*n:]
-                    eval_choices = eval_choices[:i*n] + eval_choices[(i+1)*n:]
-                    eval_answer_ids = eval_answer_ids[:i*n] + eval_answer_ids[(i+1)*n:]   
+                #   else:
+                #     eval_questions = eval_questions[:i*n] + eval_questions[(i+1)*n:]
+                #     eval_choices = eval_choices[:i*n] + eval_choices[(i+1)*n:]
+                #     eval_answer_ids = eval_answer_ids[:i*n] + eval_answer_ids[(i+1)*n:]   
 
                   eval_dataset = AgeDataset(eval_questions, eval_choices, eval_answer_ids, tokenizer)
                   all_answers, all_preds = evaluate_mc_mlm(config, model, tokenizer, eval_dataset)
@@ -393,6 +409,8 @@ def main():
 
     results = zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq, model_name_or_path, results, results_seq, seq_flag)
 
+    logging.info('Results - {}'.format(results))
+
     if seq_flag == 'False':
         if model_name_or_path == 'EleutherAI/gpt-neo-2.7B':
             results.to_excel('gpt2-results/gpt-neo-results.xlsx')
@@ -402,11 +420,11 @@ def main():
             results.to_excel('gpt2-results/{}-results.xlsx'.format(model_name_or_path))
     else:
         if model_name_or_path == 'EleutherAI/gpt-neo-2.7B':
-            results.to_excel('gpt2-results/gpt-neo-seq-results.xlsx')
+            results.to_excel('gpt2-results/gpt-neo--age-groups-results.xlsx')
         elif  model_name_or_path == 'EleutherAI/gpt-j-6B':
-            results.to_excel('gpt2-results/gpt-j-seq-results.xlsx')
+            results.to_excel('gpt2-results/gpt-j--age-groups-results.xlsx')
         else:
-            results.to_excel('gpt2-results/{}-seq-results.xlsx'.format(model_name_or_path))
+            results.to_excel('gpt2-results/{}-age-groups-results.xlsx'.format(model_name_or_path))
 
 if __name__ == '__main__':
     main()
