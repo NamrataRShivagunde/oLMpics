@@ -372,6 +372,7 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
 
     print(type(np.array(all_answers)))
     print(all_preds)
+    print(all_answers)
     print(type(np.array(all_preds)))
     print(np.array(all_answers))
     print(np.array(all_preds))
