@@ -370,7 +370,7 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
     else:
         wandb.log({"avg_eval_loss": eval_loss})
 
-    return (np.array(all_answers) == np.array(all_preds)).mean()
+    return (np.array(all_answers) == np.array(all_preds)).cpu().mean()
 
 def train(args, model, tokenizer, train_dataset, eval_dataset):
     eval_acc = evaluate(args, model, tokenizer, eval_dataset)
