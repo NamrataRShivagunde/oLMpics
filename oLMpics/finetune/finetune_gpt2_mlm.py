@@ -330,6 +330,7 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
             # Get sentence probabilities for a batch when [MASK] is replaced by label1
             for loop_counter in range(len(batch["input_ids"])):
                   question = batch["input_ids"][loop_counter]
+                  print(tokenizer.convert_ids_to_tokens(question))
                   MASK_INDEX = (question==tokenizer.mask_token_id).nonzero().item()
                   endtoken_index = (question==tokenizer.eos_token_id).nonzero()[0].item()
                   list_of_mask_index.append(MASK_INDEX)
@@ -373,8 +374,8 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
     return (np.array(all_answers) == np.array(all_preds)).mean()
 
 def train(args, model, tokenizer, train_dataset, eval_dataset):
-    # eval_acc = evaluate(args, model, tokenizer, eval_dataset)
-    # logger.info(f"Initial Eval Accuracy: {eval_acc}")
+    eval_acc = evaluate(args, model, tokenizer, eval_dataset)
+    logger.info(f"Initial Eval Accuracy: {eval_acc}")
     # train_acc = evaluate(args, model, tokenizer, train_dataset, is_train=True)
     # logger.info(f"Initial Train Accuracy: {train_acc}")
     # wandb.log({"eval_acc": eval_acc, "train_acc": train_acc})
