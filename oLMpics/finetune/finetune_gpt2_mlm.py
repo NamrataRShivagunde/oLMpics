@@ -371,6 +371,7 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
         wandb.log({"avg_eval_loss": eval_loss})
 
     print(type(np.array(all_answers)))
+    print(all_preds)
     print(type(np.array(all_preds)))
     print(np.array(all_answers))
     print(np.array(all_preds))
