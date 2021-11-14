@@ -131,7 +131,6 @@ def get_configuration():
         sample_train=200,
         sample_eval=-1,
         num_choices=2,
-        device="cuda" if torch.cuda.is_available() else "cpu"
     )
     return args
 
