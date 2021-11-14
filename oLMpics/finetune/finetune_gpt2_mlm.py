@@ -371,14 +371,6 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
         wandb.log({"avg_eval_loss": eval_loss})
 
     all_preds = [pred.item() for pred in all_preds]
-    print(type(np.array(all_answers)))
-    print(all_preds)
-    print(all_answers)
-    print(type(np.array(all_preds)))
-    print(np.array(all_answers))
-    print(np.array(all_preds))
-    print((np.array(all_answers) == np.array(all_preds)).mean().cpu())
-
     return (np.array(all_answers) == np.array(all_preds)).mean()
 
 def train(args, model, tokenizer, train_dataset, eval_dataset):
