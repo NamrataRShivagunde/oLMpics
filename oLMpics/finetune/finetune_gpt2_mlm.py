@@ -372,7 +372,8 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
 
     print(type(all_answers))
     print(type(all_preds))
-    print(np.array(all_answers).cpu() == np.array(all_preds).cpu())
+    accuarcy = np.array(all_answers) == np.array(all_preds)
+    print(accuarcy.cpu())
     print((np.array(all_answers) == np.array(all_preds)).mean().cpu())
 
     return (np.array(all_answers) == np.array(all_preds)).mean()
