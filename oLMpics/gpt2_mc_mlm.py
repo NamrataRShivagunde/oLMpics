@@ -297,16 +297,16 @@ def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
 
     return all_answers, all_preds
 
-def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_name, results, results_seq, seq_flag, device):
+def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_name, results, results_seq, seq_flag):
     AgeDataset = RoBERTaDataset if any(prefix in model_name.lower() 
         for prefix in ("roberta", "bart", "distil", "gpt")) else BERTDataset
 
     if model_name == 'EleutherAI/gpt-j-6B':
         model = transformers.AutoModelForCausalLM.from_pretrained(model_name, revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True)
-        tokenizer = transformers.AutoTokenizer.from_pretrained(model_name).to(device)
+        tokenizer = transformers.AutoTokenizer.from_pretrained(model_name).to("cuda" if torch.cuda.is_available() else "cpu")
         tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
     else:
-        model = transformers.AutoModelWithLMHead.from_pretrained(model_name).to(device)
+        model = transformers.AutoModelWithLMHead.from_pretrained(model_name).to("cuda" if torch.cuda.is_available() else "cpu")
         tokenizer = transformers.AutoTokenizer.from_pretrained(model_name , mask_token = '[MASK]')
         tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
 
@@ -409,7 +409,7 @@ def main():
     results = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "accuracy_mean", "CI", "accuracy_min", "accuracy_max"])
     results_seq = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "accuracy_mean", "CI", "accuracy_min", "accuracy_max"])
 
-    results = zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq, model_name_or_path, results, results_seq, seq_flag, args.device)
+    results = zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq, model_name_or_path, results, results_seq, seq_flag)
 
     logging.info('Results - {}'.format(results))
 
