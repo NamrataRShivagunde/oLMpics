@@ -23,6 +23,7 @@ logging.basicConfig(
 parser = argparse.ArgumentParser()
 parser.add_argument("modelname", help="gpt2 model name")
 parser.add_argument("results_seq_flag", help="True or False, set False for random division during evaluation ")
+parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu", help = "cpu or cuda")
 
 
 def get_data(file_path, sample, num_choices):
@@ -130,7 +131,7 @@ def get_configuration():
         sample_train=200,
         sample_eval=-1,
         num_choices=2,
-        device ="cuda" if torch.cuda.is_available() else "cpu"
+        device="cuda" if torch.cuda.is_available() else "cpu"
     )
     return args
 
@@ -296,16 +297,16 @@ def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
 
     return all_answers, all_preds
 
-def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_name, results, results_seq, seq_flag):
+def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_name, results, results_seq, seq_flag, device):
     AgeDataset = RoBERTaDataset if any(prefix in model_name.lower() 
         for prefix in ("roberta", "bart", "distil", "gpt")) else BERTDataset
 
     if model_name == 'EleutherAI/gpt-j-6B':
         model = transformers.AutoModelForCausalLM.from_pretrained(model_name, revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True)
-        tokenizer = transformers.AutoTokenizer.from_pretrained(model_name).to(config.device)
+        tokenizer = transformers.AutoTokenizer.from_pretrained(model_name).to(device)
         tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
     else:
-        model = transformers.AutoModelWithLMHead.from_pretrained(model_name).to(config.device)
+        model = transformers.AutoModelWithLMHead.from_pretrained(model_name).to(device)
         tokenizer = transformers.AutoTokenizer.from_pretrained(model_name , mask_token = '[MASK]')
         tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
 
@@ -408,7 +409,7 @@ def main():
     results = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "accuracy_mean", "CI", "accuracy_min", "accuracy_max"])
     results_seq = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "accuracy_mean", "CI", "accuracy_min", "accuracy_max"])
 
-    results = zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq, model_name_or_path, results, results_seq, seq_flag)
+    results = zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq, model_name_or_path, results, results_seq, seq_flag, args.device)
 
     logging.info('Results - {}'.format(results))
 
