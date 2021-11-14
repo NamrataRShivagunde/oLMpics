@@ -373,11 +373,11 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
     return (np.array(all_answers) == np.array(all_preds)).mean()
 
 def train(args, model, tokenizer, train_dataset, eval_dataset):
-    eval_acc = evaluate(args, model, tokenizer, eval_dataset)
-    logger.info(f"Initial Eval Accuracy: {eval_acc}")
-    train_acc = evaluate(args, model, tokenizer, train_dataset, is_train=True)
-    logger.info(f"Initial Train Accuracy: {train_acc}")
-    wandb.log({"eval_acc": eval_acc, "train_acc": train_acc})
+    # eval_acc = evaluate(args, model, tokenizer, eval_dataset)
+    # logger.info(f"Initial Eval Accuracy: {eval_acc}")
+    # train_acc = evaluate(args, model, tokenizer, train_dataset, is_train=True)
+    # logger.info(f"Initial Train Accuracy: {train_acc}")
+    # wandb.log({"eval_acc": eval_acc, "train_acc": train_acc})
 
     train_sampler = RandomSampler(train_dataset)
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.per_device_train_batch_size)
@@ -426,6 +426,8 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
             # to get eval_loss, create labels and pass it as arguments to model
             for i in range(len(batch["input_ids"])):
                 question = batch["input_ids"][i]
+                print(question)
+                print((question==tokenizer.mask_token_id))
                 MASK_INDEX = (question==tokenizer.mask_token_id).nonzero().item()
                 batch["input_ids"][i, MASK_INDEX] =  labels[i]
             
