@@ -108,8 +108,8 @@ def get_args():
     )
     parser.add_argument(
         "--device",
-        default="cpu"
-        #default="cuda" if torch.cuda.is_available() else "cpu"
+        #default="cpu"
+        default="cuda" if torch.cuda.is_available() else "cpu"
     )
 
     args = parser.parse_args()
@@ -298,11 +298,9 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
       loop_counter+=1
 
     label_id_encoding_map = dict(zip(label_dict.values(),label_encodings.values()))
-    print(label_id_encoding_map)
  
     for batch in eval_dataloader:       
         model.eval()
-        original_batch = batch
         labels_for_eval_loss = []
         # Creating the list all_answers  which has all the true labels 
         for loop_counter in range(len(batch["answer_id"])):
@@ -326,11 +324,12 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
         with torch.no_grad():        
             list_of_mask_index = []
             list_of_endtoken_index = []
+            
+            original_batch = batch
 
             # Get sentence probabilities for a batch when [MASK] is replaced by label1
             for loop_counter in range(len(batch["input_ids"])):
                   question = batch["input_ids"][loop_counter]
-                  print(tokenizer.convert_ids_to_tokens(question))
                   MASK_INDEX = (question==tokenizer.mask_token_id).nonzero().item()
                   endtoken_index = (question==tokenizer.eos_token_id).nonzero()[0].item()
                   list_of_mask_index.append(MASK_INDEX)
@@ -416,8 +415,6 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
                 model.eval()
             else:
                 model.train()
-            
-            original_batch = batch
                         
             labels = []
             # batch["choice_list"] is [num_choices, batch_size]
@@ -437,12 +434,11 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
             label_encoding_list = list(label_encodings.values())
             no_of_labels = len(label_encoding_list)
             
+            original_batch = batch
+
             # to get eval_loss, create labels and pass it as arguments to model
             for i in range(len(batch["input_ids"])):
                 question = batch["input_ids"][i]
-                print(question)
-                print(tokenizer.convert_ids_to_tokens(question))
-                print((question==tokenizer.mask_token_id))
                 MASK_INDEX = (question==tokenizer.mask_token_id).nonzero().item()
                 batch["input_ids"][i, MASK_INDEX] =  labels[i]
             
