@@ -353,7 +353,7 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
 
             combine_prob = torch.cat(tuple(id_prob), dim=1)
             preds = list(torch.argmax(combine_prob, dim=1))
-            all_preds.extend(preds)
+            all_preds.extend(preds.cpu())
 
             # to get eval_loss, create labels and pass it as arguments to model
             for i in range(len(batch["input_ids"])):
@@ -373,7 +373,7 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
     print(type(all_answers))
     print(type(all_preds))
     accuarcy = np.array(all_answers) == np.array(all_preds)
-    print(accuarcy.cpu())
+    print(accuarcy)
     print((np.array(all_answers) == np.array(all_preds)).mean().cpu())
 
     return (np.array(all_answers) == np.array(all_preds)).mean()
