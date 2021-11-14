@@ -356,9 +356,9 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
                     eval_choices = eval_choices[113:354]
                     eval_answer_ids = eval_answer_ids[113:354]
                 if i == 2: # Age group 30-40
-                    eval_questions = eval_questions[113:354]
-                    eval_choices = eval_choices[113:354]
-                    eval_answer_ids = eval_answer_ids[113:354]
+                    eval_questions = eval_questions[354:]
+                    eval_choices = eval_choices[354:]
+                    eval_answer_ids = eval_answer_ids[354:]
                      
                 # Cross validation splits
                 #   n = int(total_items/5)
