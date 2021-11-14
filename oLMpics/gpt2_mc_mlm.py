@@ -23,7 +23,7 @@ logging.basicConfig(
 parser = argparse.ArgumentParser()
 parser.add_argument("modelname", help="gpt2 model name")
 parser.add_argument("results_seq_flag", help="True or False, set False for random division during evaluation ")
-parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu", help = "cpu or cuda")
+#parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu", help = "cpu or cuda")
 
 
 def get_data(file_path, sample, num_choices):
@@ -303,10 +303,10 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
 
     if model_name == 'EleutherAI/gpt-j-6B':
         model = transformers.AutoModelForCausalLM.from_pretrained(model_name, revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True)
-        tokenizer = transformers.AutoTokenizer.from_pretrained(model_name).to("cuda" if torch.cuda.is_available() else "cpu")
+        tokenizer = transformers.AutoTokenizer.from_pretrained(model_name).cuda()
         tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
     else:
-        model = transformers.AutoModelWithLMHead.from_pretrained(model_name).to("cuda" if torch.cuda.is_available() else "cpu")
+        model = transformers.AutoModelWithLMHead.from_pretrained(model_name).cuda()
         tokenizer = transformers.AutoTokenizer.from_pretrained(model_name , mask_token = '[MASK]')
         tokenizer.pad_token = tokenizer.eos_token # Each batch should have elements of same length and for gpt2 we need to define a pad token
 
