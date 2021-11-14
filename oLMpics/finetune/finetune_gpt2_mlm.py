@@ -427,6 +427,7 @@ def train(args, model, tokenizer, train_dataset, eval_dataset):
             for i in range(len(batch["input_ids"])):
                 question = batch["input_ids"][i]
                 print(question)
+                print(tokenizer.convert_ids_to_tokens(question))
                 print((question==tokenizer.mask_token_id))
                 MASK_INDEX = (question==tokenizer.mask_token_id).nonzero().item()
                 batch["input_ids"][i, MASK_INDEX] =  labels[i]
