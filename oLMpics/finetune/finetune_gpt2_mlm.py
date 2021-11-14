@@ -373,7 +373,7 @@ def evaluate(args, model, tokenizer, eval_dataset, is_train=False):
     print(type(all_answers))
     print(type(all_preds))
     print(np.array(all_answers) == np.array(all_preds))
-    print(np.array(all_answers) == np.array(all_preds)).mean())
+    print((np.array(all_answers) == np.array(all_preds)).mean())
 
     return (np.array(all_answers) == np.array(all_preds)).mean()
 
