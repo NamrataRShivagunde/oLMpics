@@ -397,7 +397,7 @@ def main():
     args = parser.parse_args()
     transformers.set_seed(config.seed)
 
-    dataset_dict = {"data/number_comparison_age_compare_masked_dev.jsonl":2, "data/negation_antonym_synonym_negation_dev.jsonl":2, "data/size_comparison_dev.jsonl":2, "data/compositional_comparison_dev.jsonl":3, "data/quantifiers_coffee_cats_quantifiers_dev.jsonl":5}
+    dataset_dict = {"data/number_comparison_age_compare_masked_dev.jsonl":2, "data/negation_antonym_synonym_negation_dev.jsonl":2, "data/size_comparison_dev.jsonl":2, "data/compositional_comparison_dev.jsonl":3, "data/hypernym_conjunction_dev.jsonl":3, "data/quantifiers_coffee_cats_quantifiers_dev.jsonl":5}
     dataset_dict_seq = {"data/number_comparison_age_compare_masked_dev.jsonl":2}
     model_name_or_path = args.modelname
     seq_flag = args.results_seq_flag

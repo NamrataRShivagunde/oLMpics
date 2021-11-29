@@ -304,7 +304,7 @@ def main():
         device= args.device
         transformers.set_seed(config.seed)
 
-        dataset_dict = {"data-qa/hypernym_conjunction_dev.jsonl":3, "data-qa/composition_v2_dev.jsonl":3, "data-qa/conjunction_filt4_dev.jsonl":3}
+        dataset_dict = {"data-qa/composition_v2_dev.jsonl":3, "data-qa/conjunction_filt4_dev.jsonl":3}
         results = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "accuracy_mean", "CI", "accuracy_min", "accuracy_max"])
 
         results = zero_shot_evaluation(config, device, dataset_dict, args.modelname, results)
