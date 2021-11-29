@@ -353,7 +353,7 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
             results = results.append(result_new, ignore_index=True)
         return results
     else:
-        print("Dividing the dataset into five parts sequentially.")
+        print("Dividing the dataset into different age groups sequentially.")
         for task_name, num_choices in dataset_dict_seq.items():
             accuracy = []
             for i in range(3):
