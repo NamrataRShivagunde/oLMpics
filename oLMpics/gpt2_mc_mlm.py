@@ -202,7 +202,7 @@ def get_sentence_prob(input_ids, logits, list_of_endtoken_index):
     probs = torch.sum(torch.log(probs), dim=1)
     return probs
 
-def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
+def evaluate_mc_mlm(config, model, tokenizer, eval_dataset, task_name):
     """ 
     Evaluates model on the MC-MLM datasets and return the predicted answers
 
@@ -229,7 +229,15 @@ def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
     label_encodings = {}
     all_answers = []
     all_preds = []
-    list_of_labels = eval_dataset[0]['choice_list']
+
+    if task_name == 'data/hypernym_conjunction_dev.jsonl':
+        list_of_labels = []
+        for i in range(len(eval_dataset)):
+            for item in eval_dataset[i]['choice_list']:
+                if item not in list_of_labels:
+                    list_of_labels.append(item)
+    else:
+        list_of_labels = eval_dataset[0]['choice_list']
 
     # Adding keys and values to dictionary label_encodings
     loop_counter=0
@@ -247,10 +255,14 @@ def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
         for loop_counter in range(len(batch["answer_id"])):
             true_label_id = batch["answer_id"][loop_counter]
             actual_label = batch["choice_list"][true_label_id][loop_counter]
-            label_id_to_append = label_dict[actual_label]
+            if task_name == "data/hypernym_conjunction_dev.jsonl":
+                label_id_to_append = true_label_id.item()
+            else:
+                label_id_to_append = label_dict[actual_label]
             all_answers.append(label_id_to_append)
-           
-        del batch["choice_list"] 
+
+        choice_list = batch.pop("choice_list") 
+        #del batch["choice_list"] 
         
         for key in batch:
             if key != "answer_id":
@@ -259,7 +271,7 @@ def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
          
         _ = batch.pop("answer_id")
         label_encoding_list = list(label_encodings.values())
-        no_of_labels = len(label_encoding_list)
+        no_of_labels = len(eval_dataset[0]['choice_list'])
 
         with torch.no_grad():           
             list_of_mask_index = []
@@ -279,7 +291,12 @@ def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
                 for loop_counter in range(len(batch["input_ids"])):
                     question = batch["input_ids"][loop_counter]
                     MASK_INDEX = list_of_mask_index[loop_counter]
-                    batch["input_ids"][loop_counter, MASK_INDEX] =  label_id_encoding_map[label_counter]
+                    if task_name == "data/hypernym_conjunction_dev.jsonl":
+                        label = choice_list[label_counter][loop_counter]
+                        label_id = " "+label
+                        batch["input_ids"][loop_counter, MASK_INDEX] =  label_encodings[label_id]
+                    else:  
+                        batch["input_ids"][loop_counter, MASK_INDEX] =  label_id_encoding_map[label_counter]
 
                 outputs = model(**batch)
                 logits = outputs.logits
@@ -336,7 +353,7 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
               eval_answer_ids = list(sampled_dataset['ids'])
 
               eval_dataset = AgeDataset(eval_questions, eval_choices, eval_answer_ids, tokenizer)
-              all_answers, all_preds = evaluate_mc_mlm(config, model, tokenizer, eval_dataset)
+              all_answers, all_preds = evaluate_mc_mlm(config, model, tokenizer, eval_dataset, task_name)
               counter_a = 0
               counter_b = 0
               for i in range(len(all_answers)):
@@ -374,7 +391,7 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
                     eval_answer_ids = eval_answer_ids[354:] 
 
                 eval_dataset = AgeDataset(eval_questions, eval_choices, eval_answer_ids, tokenizer)
-                all_answers, all_preds = evaluate_mc_mlm(config, model, tokenizer, eval_dataset)
+                all_answers, all_preds = evaluate_mc_mlm(config, model, tokenizer, eval_dataset, task_name)
                 counter_a = 0
                 counter_b = 0
                 for i in range(len(all_answers)):
