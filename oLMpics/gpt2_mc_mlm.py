@@ -325,7 +325,7 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
         print("Dividing the dataset RANDOMLY.")
         for task_name, num_choices in dataset_dict.items():
             accuracy = []
-            for i in range(1):
+            for i in range(5):
               print("Evaluation {} with {} on {}".format(i, model_name, task_name))
               eval_questions, eval_choices, eval_answer_ids = get_data(task_name, config.sample_eval, num_choices)
               combined_dataset = {'que': eval_questions, 'choices': eval_choices, 'ids': eval_answer_ids, }
