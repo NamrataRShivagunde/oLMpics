@@ -26,7 +26,7 @@ logging.basicConfig(
 
 parser = argparse.ArgumentParser()
 parser.add_argument("modelname", help="gpt2 model name")
-parser.add_argument("device", help="use cpu otheruse use gpu")
+parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu", help = "cpu or cuda")
 
 @dataclass
 class CustomArguments(transformers.TrainingArguments):
@@ -63,6 +63,18 @@ def get_configuration():
     return args
 
 def get_data(file_path, sample, num_choices):
+    """ Reads jsonl file (download links in readme)
+    
+    Arguments
+        file_path (Jsonl file) : Path of the input file
+        sample (Int) : -1 if samples needs to be randomly sampled
+        num_choices (Int) : Number of choices
+
+    Returns:
+        questions (List) : List of questions
+        choice_lists (List) : List of choices 
+        answer_ids (List) : List of answer ids
+    """
     data_file = open(file_path, "r")
     logger.info("Reading QA instances from jsonl dataset at: %s", file_path)
     item_jsons = []
@@ -127,7 +139,7 @@ def get_data(file_path, sample, num_choices):
     return questions, choice_lists, answer_ids
 
 class BERTDataset(Dataset):  # Only difference is that BERTDataset has token_type_ids while RoBERTaDataset doesn't
-    
+    """ Data class for BERT """
     def __init__(self, questions, choices, answer_ids, tokenizer):
         out = tokenizer(questions)
         self.input_ids = out["input_ids"]
@@ -150,7 +162,9 @@ class BERTDataset(Dataset):  # Only difference is that BERTDataset has token_typ
         }
     
 class RoBERTaDataset(Dataset):
-    
+    """ Data class for RoBERTa.
+    Only difference is that BERTDataset has token_type_ids while RoBERTaDataset doesn't
+    """
     def __init__(self, questions, choices, answer_ids, tokenizer):
         out = tokenizer(questions, max_length=45, padding="max_length")
         self.input_ids = out["input_ids"]
@@ -171,7 +185,19 @@ class RoBERTaDataset(Dataset):
         }
 
 def evaluate_qa_task(config, device, model, tokenizer, eval_dataset, data_path):
-   
+    """ 
+    Evaluates model on the MC-QA datasets and return the predicted answers
+
+    Arguments:
+        config : Arguments from get_configuration()
+        model : Model
+        tokenizer : Tokenizer
+        eval_dataset  : RoBERTa dataset or BERT dataset 
+
+    Returns
+        all_answers (List) : True answer
+        all_preds (List) : Predicted answer
+    """
     eval_sampler = SequentialSampler(eval_dataset)
     eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=config.per_device_eval_batch_size)
 
@@ -199,12 +225,6 @@ def evaluate_qa_task(config, device, model, tokenizer, eval_dataset, data_path):
             batch[key] = torch.stack(batch[key], dim=-1).to(device)
       
         with torch.no_grad():
-          if data_path == "data-qa/hypernym_conjunction_dev.jsonl":
-            #replace [MASK] with the index of first pad token as it will be the last token 
-            for i in range(len(batch["input_ids"])):
-                  question = batch["input_ids"][i]
-                  MASK_INDEX = (question==tokenizer.mask_token_id).nonzero().item()
-                  batch["input_ids"][i, MASK_INDEX] = 220
 
           outputs = model(**batch)
           logits = outputs.logits
@@ -223,9 +243,20 @@ def evaluate_qa_task(config, device, model, tokenizer, eval_dataset, data_path):
     return all_answers, all_preds
 
 def zero_shot_evaluation(config, device, dataset_dict, model_name, results):
+    """ 
+    Evaluates model on all six oLMpics MC-MLM datasets
 
-    AgeDataset = RoBERTaDataset if any(prefix in model_name.lower() for prefix in ("roberta", "bart", "distil", "gpt")) else BERTDataset
+    Arguments:
+        config : Arguments from get_configuration()
+        dataset_dict (Dict) : Dictionary with dataset path name as keys and number of choices as values
+        model_name : Model
+        results (Dataframe) : Defined dataframe to save final results
     
+    Returns
+        final_results (Dataframe) : Final result for a model on oLMpics tasks
+    
+    """
+    AgeDataset = RoBERTaDataset if any(prefix in model_name.lower() for prefix in ("roberta", "bart", "distil", "gpt")) else BERTDataset
     
     if model_name == 'EleutherAI/gpt-j-6B':
         model = transformers.AutoModelForCausalLM.from_pretrained(model_name, mask_token = '[MASK]')

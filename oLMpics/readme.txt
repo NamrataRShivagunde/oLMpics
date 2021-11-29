@@ -1,12 +1,18 @@
-# for sequencial partition data
-CUDA_VISIBLE_DEVICES=1, python gpt2_mc_mlm.py gpt2 True 
+For MC-MLM tasks run
 
-# for random partition data
-CUDA_VISIBLE_DEVICES=1, python gpt2_mc_mlm.py gpt2 False 
+        python gpt2_mc_mlm.py [Modelname] [True/False]
+
+        e.g. CUDA_VISIBLE_DEVICES=1, python gpt2_mc_mlm.py gpt2 False 
+
+        # for age group
+        e.g. CUDA_VISIBLE_DEVICES=1, python gpt2_mc_mlm.py gpt2 True 
 
 
-QA task
+For MC-QA tasks run
 
-CUDA_VISIBLE_DEVICES=1, python gpt2_mc_qa.py gpt2 cpu
-CUDA_VISIBLE_DEVICES=1, python gpt2_mc_qa.py EleutherAI/gpt-neo-2.7B gpu 
-CUDA_VISIBLE_DEVICES=1, python gpt2_mc_qa.py EleutherAI/gpt-j-6B gpu 
+        python gpt2_mc_qa.py [Modelname]
+
+        e.g. CUDA_VISIBLE_DEVICES=1, python gpt2_mc_qa.py gpt2 
+
+
+Modelname can be {gpt2, gpt2-medium, gpt2-large, gpt2-xl, EleutherAI/gpt-neo-1.3B}

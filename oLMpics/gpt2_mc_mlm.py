@@ -12,6 +12,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader, SequentialSampler
 import transformers
 from tqdm.auto import tqdm
+import negation_reformatted_patterns as pattern
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -32,13 +33,12 @@ def get_data(file_path, sample, num_choices):
     Arguments
         file_path (Jsonl file) : Path of the input file
         sample (Int) : -1 if samples needs to be randomly sampled
-        num_choices () : 
+        num_choices (Int) : Number of choices
 
     Returns:
-        questions () : 
-        choice_lists () :
-        answer_ids () :
-
+        questions (List) : List of questions
+        choice_lists (List) : List of choices 
+        answer_ids (List) : List of answer ids
     """
     data_file = open(file_path, "r")
     logger.info("Reading QA instances from jsonl dataset at: %s", file_path)
@@ -57,6 +57,7 @@ def get_data(file_path, sample, num_choices):
     for item_json in tqdm(item_jsons,total=len(item_jsons)):
         item_id = item_json["id"]
         question_text = item_json["question"]["stem"]
+        # question_text = pattern.reformat_stem_pattern4(question_text) # Uncomment for Reformatting with specific pattern
         choice_label_to_id = {}
         choice_text_list = []
         choice_context_list = []
@@ -113,10 +114,7 @@ class CustomArguments(transformers.TrainingArguments):
             raise TypeError("__init__ missing required argument(s)")
 
 def get_configuration():
-    """ Set hyperparameters 
-    Returns
-    args () : Arguments values
-    """
+    """ Set hyperparameters """
     args = CustomArguments(
         output_dir="checkpoint",
         model_name_or_path="gpt2",
@@ -135,9 +133,7 @@ def get_configuration():
     return args
 
 class BERTDataset(Dataset):
-    """ 
-    Data class for BERT and RoBERTa.
-    """
+    """ Data class for BERT """
     def __init__(self, questions, choices, answer_ids, tokenizer):
         out = tokenizer(questions)
         self.input_ids = out["input_ids"]
@@ -160,8 +156,7 @@ class BERTDataset(Dataset):
         }
     
 class RoBERTaDataset(Dataset):
-    """ 
-    Data class for RoBERTa.
+    """ Data class for RoBERTa.
     Only difference is that BERTDataset has token_type_ids while RoBERTaDataset doesn't
     """
     def __init__(self, questions, choices, answer_ids, tokenizer):
@@ -188,12 +183,14 @@ def get_sentence_prob(input_ids, logits, list_of_endtoken_index):
     Computes the probability for a sentence in a batch
 
     Arguments:
-        input_ids () :
-        logits () :
-        list_of_endtoken_index (list) : 
+        input_ids (LongTensor) : Input ids for a batch, size [batch_size, seq_len]
+        logits (FloatTensor) : Output logits of size [batch_size, seq_len, vocab_size]
+        list_of_endtoken_index (list) : List of the index of the end token for each question.
 
     Returns
-        probs (FloatTensor) : 
+        probs (FloatTensor) : Probability of the sentence for given number of choices, size [num_of_choices]
+                              for exampple: If there are two choices for a given question. There will be two sentence probabilities
+                              as there would be two times the [MASK] is replaced by the given choices and sentence probability is computed.
     """
     # Multiplies together individual probabilities to get overall sentence probability
     logits = torch.nn.functional.softmax(logits, dim=2)
@@ -207,16 +204,17 @@ def get_sentence_prob(input_ids, logits, list_of_endtoken_index):
 
 def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
     """ 
-    Evaluates model on the MC-MLM datasets 
+    Evaluates model on the MC-MLM datasets and return the predicted answers
+
     Arguments:
-        args () :
-        model () :
-        tokenizer () :
-        eval_dataset () :
-        data_path () :
+        config : Arguments from get_configuration()
+        model : Model
+        tokenizer : Tokenizer
+        eval_dataset  : RoBERTa dataset or BERT dataset 
 
     Returns
-        probs (FloatTensor) : 
+        all_answers (List) : True answer
+        all_preds (List) : Predicted answer
     """
     eval_sampler = SequentialSampler(eval_dataset)
     eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=config.per_device_eval_batch_size)
@@ -226,7 +224,7 @@ def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
     logger.info(f"  Batch size = {config.eval_batch_size}")
     eval_dataloader = tqdm(eval_dataloader, desc="Evaluating")
     
-    #encoding all the labels
+    # Encoding all the labels
     label_dict = {}
     label_encodings = {}
     all_answers = []
@@ -241,11 +239,11 @@ def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
       label_encodings[label1] = tokenizer.encode(label1, add_special_tokens=False)[0]
       loop_counter+=1
 
-    label_id_encoding_map = dict(zip(label_dict.values(),label_encodings.values()))
+    label_id_encoding_map = dict(zip(label_dict.values(), label_encodings.values()))
  
     for batch in eval_dataloader:       
         model.eval()
-        # Creating the list all_answers  which has all the true labels 
+        # Creating the list all_answers with all the true labels 
         for loop_counter in range(len(batch["answer_id"])):
             true_label_id = batch["answer_id"][loop_counter]
             actual_label = batch["choice_list"][true_label_id][loop_counter]
@@ -267,7 +265,7 @@ def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
             list_of_mask_index = []
             list_of_endtoken_index = []
 
-            # Get sentence probabilities for a batch when [MASK] is replaced by label1
+            # Get sentence probabilities for a batch when [MASK] is replaced by given labels one by one
             for loop_counter in range(len(batch["input_ids"])):
                   question = batch["input_ids"][loop_counter]
                   MASK_INDEX = (question==tokenizer.mask_token_id).nonzero().item()
@@ -287,8 +285,7 @@ def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
                 logits = outputs.logits
                 batch_size = len(batch["input_ids"])
                 id_prob.append(
-                    torch.reshape(get_sentence_prob(batch["input_ids"], logits, list_of_endtoken_index),  
-                    (batch_size, 1)))
+                    torch.reshape(get_sentence_prob(batch["input_ids"], logits, list_of_endtoken_index),(batch_size, 1)))
 
             combine_prob = torch.cat(tuple(id_prob), dim=1)
             preds = list(torch.argmax(combine_prob, dim=1))
@@ -296,7 +293,23 @@ def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
 
     return all_answers, all_preds
 
-def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_name, results, results_seq, seq_flag, device):
+def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_name, results, seq_flag = 'False', device):
+     """ 
+    Evaluates model on all six oLMpics MC-MLM datasets
+
+    Arguments:
+        config : Arguments from get_configuration()
+        dataset_dict (Dict) : Dictionary with dataset path name as keys and number of choices as values
+        dataset_dict_seq (Dict) : Dictionary with dataset path name as keys and number of choices as values (Only for Age comparison task)
+        model_name : Model
+        results (Dataframe) : Defined dataframe to save final results 
+        seq_flag (Boolean) : Default is False, set it to True if the model needs to evaluated on age-group (Cuurently, it is only for Age Comparison task)
+        device : Default="cuda" if torch.cuda.is_available() else "cpu"
+    
+    Returns
+        final_results (Dataframe) : Final result for a model on oLMpics tasks
+    
+    """
     AgeDataset = RoBERTaDataset if any(prefix in model_name.lower() 
         for prefix in ("roberta", "bart", "distil", "gpt")) else BERTDataset
 
@@ -346,8 +359,8 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
             for i in range(3):
                 eval_questions, eval_choices, eval_answer_ids = get_data(task_name, config.sample_eval, num_choices)
                 total_items = len(eval_questions)
+                
                 # Age groups 10-20, 20-30, 30-40
-
                 if i == 0: # Age group 10-20
                     eval_questions = eval_questions[:113]
                     eval_choices = eval_choices[:113]
@@ -359,23 +372,7 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
                 if i == 2: # Age group 30-40
                     eval_questions = eval_questions[354:]
                     eval_choices = eval_choices[354:]
-                    eval_answer_ids = eval_answer_ids[354:]
-                    
-                # Cross validation splits
-                #   n = int(total_items/5)
-                #   if i==0:
-                #     eval_questions = eval_questions[n:]
-                #     eval_choices = eval_choices[n:]
-                #     eval_answer_ids = eval_answer_ids[n:] 
-                #   elif i==4:
-                #     eval_questions = eval_questions[:4*n]
-                #     eval_choices = eval_choices[:4*n]
-                #     eval_answer_ids = eval_answer_ids[:4*n]
-                    
-                #   else:
-                #     eval_questions = eval_questions[:i*n] + eval_questions[(i+1)*n:]
-                #     eval_choices = eval_choices[:i*n] + eval_choices[(i+1)*n:]
-                #     eval_answer_ids = eval_answer_ids[:i*n] + eval_answer_ids[(i+1)*n:]   
+                    eval_answer_ids = eval_answer_ids[354:] 
 
                 eval_dataset = AgeDataset(eval_questions, eval_choices, eval_answer_ids, tokenizer)
                 all_answers, all_preds = evaluate_mc_mlm(config, model, tokenizer, eval_dataset)
@@ -392,8 +389,9 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
             mini, maxi = st.t.interval(alpha=0.95, df=len(accuracy)-1, loc=np.mean(accuracy), scale=st.sem(accuracy)) #sample size less than 30
 
             result_new = {'model_name': model_name, 'task_name':task_name, 'accuracy_5_runs':str(np.array(accuracy)), 'accuracy_mean': np.array(accuracy).mean()*100, 'CI':-1* np.array(accuracy).mean()*100+maxi*100, 'accuracy_min':mini, 'accuracy_max':maxi  }
-            results_seq = results_seq.append(result_new, ignore_index=True)
-        return results_seq
+            results = results.append(result_new, ignore_index=True)
+        return results
+
 
 def main():
     config = get_configuration()
@@ -406,26 +404,27 @@ def main():
     seq_flag = args.results_seq_flag
 
     results = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "accuracy_mean", "CI", "accuracy_min", "accuracy_max"])
-    results_seq = pd.DataFrame(columns=["model_name", "task_name", "accuracy_5_runs", "accuracy_mean", "CI", "accuracy_min", "accuracy_max"])
 
-    results = zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq, model_name_or_path, results, results_seq, seq_flag, args.device)
+    final_results = zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq, model_name_or_path, results, seq_flag, args.device)
 
-    logging.info('Results - {}'.format(results))
+    logging.info('Results - {}'.format(final_results))
 
     if seq_flag == 'False':
         if model_name_or_path == 'EleutherAI/gpt-neo-2.7B':
-            results.to_excel('gpt2-results/gpt-neo-results.xlsx')
+            final_results.to_excel('gpt2-results/gpt-neo-results.xlsx')
         elif  model_name_or_path == 'EleutherAI/gpt-j-6B':
-            results.to_excel('gpt2-results/gpt-j-results.xlsx')
+            final_results.to_excel('gpt2-results/gpt-j-results.xlsx')
         else:
-            results.to_excel('gpt2-results/{}-results.xlsx'.format(model_name_or_path))
+            final_results.to_excel('gpt2-results/{}-results.xlsx'.format(model_name_or_path))
     else:
         if model_name_or_path == 'EleutherAI/gpt-neo-1.3B':
-            results.to_excel('gpt2-results/gpt-neo-age-groups-results.xlsx')
+            final_results.to_excel('gpt2-results/gpt-neo-age-groups-results.xlsx')
         elif  model_name_or_path == 'EleutherAI/gpt-j-6B':
-            results.to_excel('gpt2-results/gpt-j--age-groups-results.xlsx')
+            final_results.to_excel('gpt2-results/gpt-j--age-groups-results.xlsx')
         else:
-            results.to_excel('gpt2-results/{}-age-groups-results.xlsx'.format(model_name_or_path))
+            final_results.to_excel('gpt2-results/{}-age-groups-results.xlsx'.format(model_name_or_path))
 
 if __name__ == '__main__':
     main()
+
+
