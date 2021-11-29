@@ -347,7 +347,7 @@ def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_n
               eval_questions, eval_choices, eval_answer_ids = get_data(task_name, config.sample_eval, num_choices)
               combined_dataset = {'que': eval_questions, 'choices': eval_choices, 'ids': eval_answer_ids, }
               combined_dataset = pd.DataFrame(data=combined_dataset)
-              sampled_dataset = combined_dataset.sample(frac = 1)
+              sampled_dataset = combined_dataset.sample(frac = 0.8)
               eval_questions = list(sampled_dataset['que'])
               eval_choices = list(sampled_dataset['choices'])
               eval_answer_ids = list(sampled_dataset['ids'])
