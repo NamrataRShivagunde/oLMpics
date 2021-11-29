@@ -294,7 +294,7 @@ def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
     return all_answers, all_preds
 
 def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_name, results, seq_flag = 'False', device):
-     """ 
+    """ 
     Evaluates model on all six oLMpics MC-MLM datasets
 
     Arguments:
