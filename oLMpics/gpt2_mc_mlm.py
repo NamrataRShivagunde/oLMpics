@@ -293,21 +293,21 @@ def evaluate_mc_mlm(config, model, tokenizer, eval_dataset):
 
     return all_answers, all_preds
 
-def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_name, results, seq_flag = 'False', device):
-    # """ Evaluates model on all six oLMpics MC-MLM datasets
+def zero_shot_evaluation_mc_mlm(config, dataset_dict, dataset_dict_seq,  model_name, results, seq_flag, device):
+    """ Evaluates model on all six oLMpics MC-MLM datasets
 
-    #     Arguments:
-    #         config : Arguments from get_configuration()
-    #         dataset_dict (Dict) : Dictionary with dataset path name as keys and number of choices as values
-    #         dataset_dict_seq (Dict) : Dictionary with dataset path name as keys and number of choices as values (Only for Age comparison task)
-    #         model_name : Model
-    #         results (Dataframe) : Defined dataframe to save final results 
-    #         seq_flag (Boolean) : Default is False, set it to True if the model needs to evaluated on age-group (Cuurently, it is only for Age Comparison task)
-    #         device : Default="cuda" if torch.cuda.is_available() else "cpu"
+        Arguments:
+            config : Arguments from get_configuration()
+            dataset_dict (Dict) : Dictionary with dataset path name as keys and number of choices as values
+            dataset_dict_seq (Dict) : Dictionary with dataset path name as keys and number of choices as values (Only for Age comparison task)
+            model_name : Model
+            results (Dataframe) : Defined dataframe to save final results 
+            seq_flag (Boolean) : Set it to True if the model needs to evaluated on age-group (Cuurently, it is only for Age Comparison task)
+            device : Default="cuda" if torch.cuda.is_available() else "cpu"
 
-    #     Returns
-    #         final_results (Dataframe) : Final result for a model on oLMpics tasks
-    # """
+        Returns
+            final_results (Dataframe) : Final result for a model on oLMpics tasks
+    """
     
     AgeDataset = RoBERTaDataset if any(prefix in model_name.lower() 
         for prefix in ("roberta", "bart", "distil", "gpt")) else BERTDataset
